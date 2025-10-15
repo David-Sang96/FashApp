@@ -70,17 +70,13 @@ const Footer = ({
         <footer>
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">
             <div className="col-span-2">
-              <div className="text-secondary text-xl font-semibold">
-                FASH.COM
-              </div>
-              <p className="font-bold">{tagline}</p>
+              <div className="text-xl font-semibold">FASH.COM</div>
+              <p>{tagline}</p>
             </div>
             {menuItems.map((section, sectionIdx) => (
               <div key={sectionIdx}>
-                <h3 className="text-secondary mb-3 font-semibold">
-                  {section.title}
-                </h3>
-                <ul className="text-muted-foreground space-y-3 text-sm">
+                <h3 className="mb-3 font-semibold">{section.title}</h3>
+                <ul className="space-y-3 text-sm">
                   {section.links.map((link, linkIdx) => (
                     <li
                       key={linkIdx}
@@ -93,7 +89,7 @@ const Footer = ({
               </div>
             ))}
           </div>
-          <div className="text-muted-foreground mt-5 flex flex-col justify-between gap-4 border-t px-10 pt-6 text-sm font-medium md:flex-row">
+          <div className="mt-5 flex flex-col justify-between gap-4 border-t px-10 pt-6 text-sm font-medium md:flex-row">
             <p>{copyright}</p>
             <ul className="flex gap-4">
               {bottomLinks.map((link, linkIdx) => (
