@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { productItems } from "@/features/home/components/NewArrivals";
 import { useState } from "react";
-import type { ProductItemType } from "../../types/product-type";
+import type { ProductItemType } from "../../../product-detail/components/product-type";
 import CartItem from "./CartItem";
 
 const CartSheet = () => {
@@ -33,9 +33,9 @@ const CartSheet = () => {
         ))}
       </div>
       <SheetFooter>
-        <Button className="cursor-pointer">CheckOut</Button>
+        <Button className="cursor-pointer rounded-full">CheckOut</Button>
         <SheetClose asChild>
-          <Button className="cursor-pointer" variant="outline">
+          <Button className="cursor-pointer rounded-full" variant="outline">
             Close
           </Button>
         </SheetClose>

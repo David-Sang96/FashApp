@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 
 import { Link } from "react-router";
-import type { ProductItemType } from "../types/product-type";
+import type { ProductItemType } from "../../product-detail/components/product-type";
 import RatingConverter from "./RatingConverter";
 
 interface ProductCardProps {
@@ -11,7 +11,7 @@ interface ProductCardProps {
 const ProductCard = ({ item }: ProductCardProps) => {
   const { id, name, price, images, rating } = item;
   return (
-    <Link to={`${id}`}>
+    <Link to={`product/${id}`}>
       <Card className="bg-primary/10 p-2">
         <CardContent className="p-0">
           <img

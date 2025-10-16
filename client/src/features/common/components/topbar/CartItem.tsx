@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { FiMinus } from "react-icons/fi";
 import { IoTrashBinOutline } from "react-icons/io5";
-import type { ProductItemType } from "../../types/product-type";
+import type { ProductItemType } from "../../../product-detail/components/product-type";
 
 interface CartItemProps {
   product: ProductItemType;
@@ -37,15 +37,7 @@ const CartItem = ({ product, deleteCartItem }: CartItemProps) => {
           className="text-destructive size-5 cursor-pointer"
           onClick={() => deleteCartItem(product.id)}
         />
-        <div className="space-x-2">
-          <Button
-            size={"sm"}
-            onClick={() => setCount((prev) => prev + 1)}
-            className="cursor-pointer"
-          >
-            <FaPlus className="size-3" />
-          </Button>
-          <span>{count}</span>
+        <div className="space-x-3">
           <Button
             size={"sm"}
             onClick={() => {
@@ -53,9 +45,17 @@ const CartItem = ({ product, deleteCartItem }: CartItemProps) => {
                 setCount((prev) => prev - 1);
               }
             }}
-            className="cursor-pointer"
+            className="cursor-pointer rounded-full"
           >
             <FiMinus className="size-3" />
+          </Button>
+          <span>{count}</span>
+          <Button
+            size={"sm"}
+            onClick={() => setCount((prev) => prev + 1)}
+            className="cursor-pointer rounded-full"
+          >
+            <FaPlus className="size-3" />
           </Button>
         </div>
       </div>

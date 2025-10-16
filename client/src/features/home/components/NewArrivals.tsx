@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import ProductCard from "@/features/common/components/ProductCard";
-import type { ProductItemType } from "@/features/common/types/product-type";
+import type { ProductItemType } from "@/features/product-detail/components/product-type";
 import { Link } from "react-router";
 
 // eslint-disable-next-line react-refresh/only-export-components

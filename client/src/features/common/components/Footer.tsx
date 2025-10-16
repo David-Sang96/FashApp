@@ -89,7 +89,7 @@ const Footer = ({
               </div>
             ))}
           </div>
-          <div className="mt-5 flex flex-col justify-between gap-4 border-t px-10 pt-6 text-sm font-medium md:flex-row">
+          <div className="mt-5 flex flex-col justify-between gap-4 border-t px-4 pt-6 text-sm font-medium md:px-10 lg:flex-row">
             <p>{copyright}</p>
             <ul className="flex gap-4">
               {bottomLinks.map((link, linkIdx) => (
