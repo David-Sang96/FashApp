@@ -1,13 +1,13 @@
 import { compare, genSalt, hash } from "bcrypt";
 import { model, Schema } from "mongoose";
-import { validation, validationMessage } from "../config/schemaValidation";
 import { IUser } from "../types";
+import { validation, validationMessage } from "../validators/schemaValidation";
 
 const userSchema = new Schema<IUser>(
   {
     name: {
       type: String,
-      required: [true, "Name is required"],
+      required: true,
       minlength: [
         validation.USERNAME_MIN_LENGTH,
         validationMessage.USERNAME_MIN_LENGTH_MESSAGE,
@@ -19,13 +19,13 @@ const userSchema = new Schema<IUser>(
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
+      required: true,
       unique: true,
-      match: [/\S+@\S+\.\S+/, validationMessage.EMAIL_MESSAGE],
+      match: [validation.EMAIL_REGEX, validationMessage.EMAIL_REGEX_MESSAGE],
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      required: true,
       minlength: [
         validation.PASSWORD_MIN_LENGTH,
         validationMessage.PASSWORD_MIN_LENGTH_MESSAGE,
@@ -36,6 +36,7 @@ const userSchema = new Schema<IUser>(
       ],
     },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    refreshToken: { type: String, required: true },
     lastLogin: Date,
   },
   { timestamps: true }
