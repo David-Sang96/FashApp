@@ -2,6 +2,7 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { json, urlencoded } from "express";
+import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import morgan from "morgan";
 import { ENV_VARS } from "./config/envVars";
@@ -27,15 +28,29 @@ const corsOptions = {
   credentials: true, // Allow cookies or authorization header
 };
 
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100, // Limit each IP to 100 requests per 15 mins
+  message: "Too many requests from this IP, please try again after 15 minutes",
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// 1. Logging & Security (The Shield)
 app
   .use(morgan("dev"))
-  .use(urlencoded({ extended: true }))
-  .use(json())
-  .use(cookieParser())
+  .use(helmet()) // Security first
   .use(cors(corsOptions))
-  .use(helmet())
-  .use(compression());
+  .use(compression()); // Compress everything after security
 
-app.use(routes);
+// 2. Data Parsers (The Translators)
+app
+  .use(cookieParser())
+  .use(json()) // Parse body before it hits routes
+  .use(urlencoded({ extended: true }));
 
+// 3. Rate Limiting & Routes (The Logic)
+app.use("/api/v1", apiLimiter, routes); // The "Bouncer" and the "VIP Section"
+
+// 4. The Safety Net (The Final Destination)
 app.use(errorHandler);

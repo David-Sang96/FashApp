@@ -1,6 +1,6 @@
 import { compare, genSalt, hash } from "bcrypt";
 import { model, Schema } from "mongoose";
-import { IUser } from "../types";
+import { IUser } from "../types/userType";
 import { validation, validationMessage } from "../validators/schemaValidation";
 
 const userSchema = new Schema<IUser>(
@@ -26,6 +26,7 @@ const userSchema = new Schema<IUser>(
     password: {
       type: String,
       required: true,
+      select: false,
       minlength: [
         validation.PASSWORD_MIN_LENGTH,
         validationMessage.PASSWORD_MIN_LENGTH_MESSAGE,
@@ -36,7 +37,7 @@ const userSchema = new Schema<IUser>(
       ],
     },
     role: { type: String, enum: ["user", "admin"], default: "user" },
-    refreshToken: { type: String, required: true },
+    refreshToken: { type: String, default: null, index: true, select: false },
     lastLogin: Date,
   },
   { timestamps: true }

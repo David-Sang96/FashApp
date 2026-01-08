@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { productItems } from "@/features/home/components/NewArrivals";
 import { useState } from "react";
-import type { ProductItemType } from "../../../product-detail/components/product-type";
+import type { ProductItemType } from "../../../product-detail/types/product-type";
 import CartItem from "./CartItem";
 
 const CartSheet = () => {

@@ -17,16 +17,21 @@ export const validation = {
 };
 
 export const validationMessage = {
-  // Authentication
+  // User
+  USERNAME_REQUIRED_MESSAGE: "Username is required",
   USERNAME_MIN_LENGTH_MESSAGE: `Name must be at least ${validation.USERNAME_MIN_LENGTH} characters`,
   USERNAME_MAX_LENGTH_MESSAGE: `Name must not be more than  ${validation.USERNAME_MAX_LENGTH} characters`,
   EMAIL_REGEX_MESSAGE: "Please enter a valid email",
+  PASSWORD_REQUIRED_MESSAGE: "Password is required",
   PASSWORD_MIN_LENGTH_MESSAGE: `Password must be at least ${validation.PASSWORD_MIN_LENGTH} characters`,
   PASSWORD_REGEX_MESSAGE: "Password can only contain letters and numbers",
 
   // Product
+  PRODUCTNAME_REQUIRED_MESSAGE: "Product name is required",
   PRODUCTNAME_MIN_LENGTH_MESSAGE: `Name must be at least ${validation.PRODUCTNAME_MIN_LENGTH} characters`,
+  DESCRIPTION_REQUIRED_MESSAGE: "Product description is required",
   DESCRIPTION_MIN_LENGTH_MESSAGE: `Description must be at least ${validation.DESCRIPTION_MIN_LENGTH} characters`,
+  CATEGORY_REQUIRED_MESSAGE: "Category is required",
   CATEGORY_MIN_lENGTH_MESSAGE: `Category must be at least ${validation.CATEGORY_MIN_lENGTH} characters`,
   PRICE_REQUIRED_MESSAGE: "Price is required",
   PRICE_MIN_MESSAGE: "Price must be at least $1",
@@ -37,11 +42,11 @@ export const validationMessage = {
   RATING_REQUIRED_MESSAGE: "Rating is required",
   RATING_MIN_MESSAGE: "Rating must be at least 0",
   SIZES_MESSAGE: "At least one size must be provided",
-  SIZES_REQUIRED_MESSAGE: "Sizes are required",
+  SIZES_REQUIRED_MESSAGE: "Sizes is required",
   COLORS_MESSAGE: "At least one color must be provided",
-  COLORS_REQUIRED_MESSAGE: "Colors are required",
+  COLORS_REQUIRED_MESSAGE: "Colors is required",
   IMAGES_MESSAGE: "At least one image must be provided",
-  IMAGES_REQUIRED_MESSAGE: "At least one image is required",
+  IMAGES_REQUIRED_MESSAGE: "Images is required",
   NEWARRIVAL_REQUIRED_MESSAGE: "NewArrival is required",
   FEATURE_REQUIRED_MESSAGE: "Feature is required",
 };

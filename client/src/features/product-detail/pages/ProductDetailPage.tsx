@@ -87,16 +87,12 @@ const ProductDetailPage = () => {
       </div>
       <div className="lg:pt-3">
         <h2 className="text-2xl font-bold">{product.name}</h2>
-        {/* Rating */}
         <div className="flex items-center gap-2">
           <RatingConverter rating={product.rating} />
           <span className="text-sm text-black/40">{product.rating}/5</span>
         </div>
-        {/* Price */}
         <div className="py-3 text-xl font-semibold">${product.price}</div>
-        {/* Description */}
         <div className="border-b-2 pb-3 text-sm">{product.description}</div>
-        {/* Colors */}
         <div className="border-b-2 py-3">
           <div className="text-sm">Colors</div>
           <div className="flex items-center gap-2 pt-2">

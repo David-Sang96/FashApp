@@ -1,4 +1,7 @@
-import "dotenv/config";
+// import "dotenv/config";
+import dotenvFlow from "dotenv-flow";
+dotenvFlow.config();
+
 import { app } from "./app";
 import { connectDB } from "./config/db";
 import { ENV_VARS } from "./config/envVars";

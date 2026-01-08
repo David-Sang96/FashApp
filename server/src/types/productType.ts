@@ -1,15 +1,10 @@
 import { Document, Types } from "mongoose";
 
-export interface IUser extends Document {
-  name: string;
-  email: string;
-  password: string;
-  role: "user" | "admin";
-  createdAt: Date;
-  isMatchPassword(password: string): Promise<boolean>;
-  lastLogin: Date;
-  refreshToken: string;
+export interface Image {
+  url: string;
+  public_alt: string;
 }
+
 export interface IProduct extends Document {
   name: string;
   description: string;
@@ -18,7 +13,7 @@ export interface IProduct extends Document {
   category: string;
   sizes: string[];
   colors: string[];
-  images: { url: string; public_alt: string }[];
+  images: Image[];
   is_newArrival: boolean;
   is_feature: boolean;
   rating_count: number;

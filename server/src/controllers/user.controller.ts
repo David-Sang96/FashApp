@@ -3,99 +3,82 @@ import jwt from "jsonwebtoken";
 import { ENV_VARS } from "../config/envVars";
 import { CustomJwtPayload } from "../middlewares/protect.middleware";
 import { User } from "../models/user.model";
+import { UserService } from "../services/user.service";
+import { LoginResponse } from "../types/userType";
 import { AppError } from "../utils/AppError";
 import { catchAsync } from "../utils/catchAsync";
 import { generateJwtTokens } from "../utils/generateToken";
+import { setTokensCookies } from "../utils/setTokenCookies";
 
-// @route POST | api/v1/auth/register
-// @desc Register new user
-// @access Public
+/**
+ * @route   PPOST | api/v1/auth/register
+ * @desc    Register new user
+ * @access  Public
+ */
 export const registerUser = catchAsync(async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
-  const existingUser = await User.findOne({ email });
-  if (existingUser) throw new AppError("User already exists", 409);
-  const newUser = await User.create({ name, email, password });
-  const { accessToken, refreshToken } = generateJwtTokens(newUser.id);
-  newUser.refreshToken = refreshToken;
-  await newUser.save({ validateBeforeSave: false });
+  const newUser = await UserService.register(name, email, password);
+  const { accessToken, refreshToken } = generateJwtTokens(newUser._id);
 
-  res
-    .cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: ENV_VARS.NODE_ENV === "production",
-      maxAge: 15 * 60 * 1000,
-      sameSite: "none",
-    })
-    .cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: ENV_VARS.NODE_ENV === "production",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      sameSite: "none",
-    })
-    .status(201)
-    .json({
-      success: true,
-      message: "Register successfull",
-      user: {
-        _id: newUser._id,
-        email: newUser.email,
-        name: newUser.name,
-        role: newUser.role,
-        createdAt: newUser.createdAt,
-      },
-    });
+  // Save refresh token in DB
+  newUser.refreshToken = refreshToken;
+  await newUser.save({ validateBeforeSave: false }); // Skip full validation
+
+  // Set cookies using helper
+  setTokensCookies(res, accessToken, refreshToken);
+
+  res.status(201).json({
+    success: true,
+    message: "Register successful",
+    user: {
+      _id: newUser._id.toString(),
+      email: newUser.email,
+      name: newUser.name,
+      role: newUser.role,
+      createdAt: newUser.createdAt,
+    },
+  });
 });
 
-// @route POST | api/v1/auth/login
-// @desc Login to existing user's account
-// @access Public
+/**
+ * @route   POST | api/v1/auth/login
+ * @desc    Login to existing user's account
+ * @access  Public
+ */
 export const loginUser = catchAsync(async (req: Request, res: Response) => {
   const { email, password } = req.body;
-
-  const user = await User.findOne({ email });
-  const isMatch = user && (await user.isMatchPassword(password));
-
-  if (!isMatch) throw new AppError("Invalid email or password", 401);
-
+  const user = await UserService.login(email, password);
   const { accessToken, refreshToken } = generateJwtTokens(user.id);
   user.lastLogin = new Date();
   user.refreshToken = refreshToken;
-  await user.save({ validateBeforeSave: false }); // Skip full validation
+  await user.save({ validateBeforeSave: false });
 
-  res
-    .cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: ENV_VARS.NODE_ENV === "production",
-      maxAge: 15 * 60 * 1000,
-      sameSite: "none",
-    })
-    .cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: ENV_VARS.NODE_ENV === "production",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      sameSite: "none",
-    })
-    .json({
-      success: true,
-      message: "Login successfull",
-      user: {
-        _id: user._id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        lastLogin: user.lastLogin,
-      },
-    });
+  setTokensCookies(res, accessToken, refreshToken);
+
+  const response: LoginResponse = {
+    success: true,
+    message: "Login successful",
+    user: {
+      _id: user._id.toString(),
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      lastLogin: user.lastLogin,
+    },
+  };
+  res.json(response);
 });
 
-// @route POST | api/v1/auth/logut
-// @desc logout user account and clear token
-// @access Public
+/**
+ * @route   POST | /api/v1/auth/logout
+ * @desc    Logout user account and clear token
+ * @access  Public
+ */
 export const logoutUser = catchAsync(async (req: Request, res: Response) => {
-  if (req.userId) {
-    await User.findByIdAndUpdate(req.userId, { refreshToken: null });
+  const refreshToken = req.cookies.refreshToken;
+  if (refreshToken) {
+    await User.findOneAndUpdate({ refreshToken }, { refreshToken: null });
   }
-
   res
     .clearCookie("accessToken", {
       httpOnly: true,
@@ -110,9 +93,33 @@ export const logoutUser = catchAsync(async (req: Request, res: Response) => {
     .json({ success: true, message: "Logout successful" });
 });
 
-// @route POST | api/v1/auth/refresh
-// @desc  Rotate JWT tokens (access + refresh)
-// @access Public
+/**
+ * @route   GET | /api/v1/auth/users
+ * @desc    Get all users
+ * @access  Private
+ */
+export const allUsers = catchAsync(async (req: Request, res: Response) => {
+  const users = await UserService.getUsers();
+  res.json({ success: true, users });
+});
+
+/**
+ * @route   GET | /api/v1/auth/user/:id
+ * @desc    Get user base on ID
+ * @access  Private
+ */
+export const singleUser = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const user = await UserService.getUser(id);
+  if (!user) throw new AppError("User not found", 404);
+  res.json({ success: true, user });
+});
+
+/**
+ * @route   POST | api/v1/auth/refresh
+ * @desc    Rotate JWT tokens (access + refresh)
+ * @access  Public
+ */
 export const refresh = catchAsync(async (req: Request, res: Response) => {
   const oldToken = req.cookies.refreshToken;
   if (!oldToken) throw new AppError("No refresh token", 401);
@@ -129,21 +136,10 @@ export const refresh = catchAsync(async (req: Request, res: Response) => {
   user.refreshToken = refreshToken;
   await user.save();
 
-  res
-    .cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: ENV_VARS.NODE_ENV === "production",
-      maxAge: 15 * 60 * 1000,
-      sameSite: "none",
-    })
-    .cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: ENV_VARS.NODE_ENV === "production",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      sameSite: "none",
-    })
-    .json({
-      success: true,
-      message: "Tokens rotated",
-    });
+  setTokensCookies(res, accessToken, refreshToken);
+
+  res.json({
+    success: true,
+    message: "Tokens rotated",
+  });
 });

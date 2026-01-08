@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 
 import { Link } from "react-router";
-import type { ProductItemType } from "../../product-detail/components/product-type";
+import type { ProductItemType } from "../../product-detail/types/product-type";
 import RatingConverter from "./RatingConverter";
 
 interface ProductCardProps {

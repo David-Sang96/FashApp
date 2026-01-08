@@ -1,5 +1,5 @@
 import mongoose, { model, Schema } from "mongoose";
-import { IProduct } from "../types";
+import { IProduct } from "../types/productType";
 import { validation, validationMessage } from "../validators/schemaValidation";
 
 const productSchema = new Schema<IProduct>(

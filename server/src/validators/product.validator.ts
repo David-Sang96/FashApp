@@ -6,14 +6,14 @@ export const createProductValidator = [
   body("name")
     .trim()
     .notEmpty()
-    .withMessage(validationMessage.PRODUCTNAME_MIN_LENGTH_MESSAGE)
+    .withMessage(validationMessage.PRODUCTNAME_REQUIRED_MESSAGE)
     .isLength({ min: validation.PRODUCTNAME_MIN_LENGTH })
     .withMessage(validationMessage.PRODUCTNAME_MIN_LENGTH_MESSAGE),
 
   body("description")
     .trim()
     .notEmpty()
-    .withMessage(validationMessage.DESCRIPTION_MIN_LENGTH_MESSAGE)
+    .withMessage(validationMessage.DESCRIPTION_REQUIRED_MESSAGE)
     .isLength({ min: validation.DESCRIPTION_MIN_LENGTH })
     .withMessage(validationMessage.DESCRIPTION_MIN_LENGTH_MESSAGE),
 
@@ -34,7 +34,7 @@ export const createProductValidator = [
   body("category")
     .trim()
     .notEmpty()
-    .withMessage(validationMessage.CATEGORY_MIN_lENGTH_MESSAGE)
+    .withMessage(validationMessage.CATEGORY_REQUIRED_MESSAGE)
     .isLength({ min: validation.CATEGORY_MIN_lENGTH })
     .withMessage(validationMessage.CATEGORY_MIN_lENGTH_MESSAGE),
 
@@ -92,13 +92,6 @@ export const createProductValidator = [
 ];
 
 export const updateProductValidator = [
-  param("id").custom((value) => {
-    if (!Types.ObjectId.isValid(value)) {
-      throw new Error("Invalid product ID");
-    }
-    return true;
-  }),
-
   body("name")
     .optional()
     .trim()
@@ -182,7 +175,7 @@ export const updateProductValidator = [
     .withMessage(validationMessage.RATING_MIN_MESSAGE),
 ];
 
-export const deleteProductValidator = [
+export const productIDValidator = [
   param("id").custom((value) => {
     if (!Types.ObjectId.isValid(value)) {
       throw new Error("Invalid product ID");

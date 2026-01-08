@@ -5,9 +5,10 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/index.ts",
+    "dev": "cross-env NODE_ENV=development nodemon src/index.ts",
     "build": "tsc -p .",
-    "start": "node"
+    "start": "cross-env NODE_ENV=production node dist/index.js",
+    "clean": "rm -rf dist"
   },
   "keywords": [],
   "author": "",
@@ -18,9 +19,12 @@
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
+    "dotenv-flow": "^4.1.0",
     "express": "^5.1.0",
-    "express-validator": "^7.2.1",
+    "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.3.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.1",

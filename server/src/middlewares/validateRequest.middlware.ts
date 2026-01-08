@@ -11,3 +11,10 @@ export const validateRequest = (
   if (!result.isEmpty()) throw new AppError(result.array()[0].msg, 400);
   next();
 };
+
+/* 
+Important rule to remember
+Middleware type	How to pass error
+sync :	throw or next(err)
+async	: next(err) only
+*/

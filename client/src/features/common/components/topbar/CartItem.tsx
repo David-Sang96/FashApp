@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { FiMinus } from "react-icons/fi";
 import { IoTrashBinOutline } from "react-icons/io5";
-import type { ProductItemType } from "../../../product-detail/components/product-type";
+import type { ProductItemType } from "../../../product-detail/types/product-type";
 
 interface CartItemProps {
   product: ProductItemType;
