@@ -1,5 +1,5 @@
+import RatingConverter from "@/common/components/RatingConverter";
 import { Button } from "@/components/ui/button";
-import RatingConverter from "@/features/common/components/RatingConverter";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa6";

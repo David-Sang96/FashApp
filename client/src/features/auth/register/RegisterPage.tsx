@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { registerSchema } from "@/common/types/schema/auth";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -8,26 +10,46 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { registerSchema } from "@/features/common/types/schema/auth";
+import { useRegisterMutation } from "@/store/api/userApi";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import {
+  AiOutlineEye,
+  AiOutlineEyeInvisible,
+  AiOutlineLoading3Quarters,
+} from "react-icons/ai";
+import { Link, useNavigate } from "react-router";
+import { toast } from "sonner";
 import type z from "zod";
 
 type formInputs = z.infer<typeof registerSchema>;
 
 const RegisterPage = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [registerMutation, { isLoading }] = useRegisterMutation();
+  const navigate = useNavigate();
   const form = useForm<formInputs>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      usename: "",
+      name: "",
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = (val: formInputs) => {
-    console.log(val);
+  const onSubmit = async (val: formInputs) => {
+    try {
+      await registerMutation(val).unwrap();
+      toast.success("Welcome! Your account was created.");
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
+    } catch (err: any) {
+      toast.error(
+        err?.data?.message || "Registration failed. Please try again.",
+      );
+    }
   };
 
   return (
@@ -42,7 +64,7 @@ const RegisterPage = () => {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
-            name="usename"
+            name="name"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Name</FormLabel>
@@ -82,12 +104,29 @@ const RegisterPage = () => {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Enter your password"
-                    {...field}
-                    type="password"
-                    className="rounded-full text-sm"
-                  />
+                  <div className="group relative">
+                    <Input
+                      placeholder="Enter your password"
+                      {...field}
+                      type={isVisible ? "text" : "password"}
+                      className="rounded-full pr-12 text-sm transition-all duration-300 focus:ring-2"
+                    />
+
+                    <div
+                      className={`absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer transition-all duration-300 ease-out active:scale-90 ${
+                        field.value
+                          ? "visible translate-x-0 scale-100 opacity-100"
+                          : "invisible translate-x-4 scale-75 opacity-0"
+                      }`}
+                      onClick={() => setIsVisible((prev) => !prev)}
+                    >
+                      {isVisible ? (
+                        <AiOutlineEyeInvisible className="size-5" />
+                      ) : (
+                        <AiOutlineEye className="size-5" />
+                      )}
+                    </div>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -104,9 +143,13 @@ const RegisterPage = () => {
             </div>
             <Button
               type="submit"
-              className="w-full cursor-pointer rounded-full"
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full"
+              disabled={isLoading}
             >
-              Register
+              {isLoading && (
+                <AiOutlineLoading3Quarters className="size-5 animate-spin" />
+              )}
+              {isLoading ? "Registering..." : "Register"}
             </Button>
           </div>
         </form>

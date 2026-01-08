@@ -2,7 +2,7 @@ import { validation, validationMessage } from "@/config";
 import { z } from "zod";
 
 export const registerSchema = z.object({
-  usename: z
+  name: z
     .string()
     .min(
       validation.USERNAME_MIN_LENGTH,

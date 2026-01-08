@@ -1,5 +1,5 @@
+import ProductCard from "@/common/components/ProductCard";
 import { Button } from "@/components/ui/button";
-import ProductCard from "@/features/common/components/ProductCard";
 import type { ProductItemType } from "@/features/product-detail/types/product-type";
 import { Link } from "react-router";
 

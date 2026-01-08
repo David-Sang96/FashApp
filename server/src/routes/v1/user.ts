@@ -1,6 +1,7 @@
 import express from "express";
 import {
   allUsers,
+  checkAuth,
   loginUser,
   logoutUser,
   refresh,
@@ -21,6 +22,7 @@ router.post("/register", registerUserValidator, validateRequest, registerUser);
 router.post("/login", loginUserValidator, validateRequest, loginUser);
 router.post("/logout", logoutUser);
 router.get("/user/:id", protect, userIDValidator, validateRequest, singleUser);
+router.get("/me", protect, checkAuth);
 router.get("/users", protect, allUsers);
 router.post("/refresh", refresh);
 

@@ -116,6 +116,26 @@ export const singleUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 /**
+ * @route   GET | /api/v1/auth/me
+ * @desc    Check Authentication
+ * @access  Private
+ */
+export const checkAuth = catchAsync(async (req: Request, res: Response) => {
+  if (!req.user) throw new AppError("User not authenticated", 401);
+
+  res.json({
+    success: true,
+    user: {
+      _id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+      lastLogin: req.user.lastLogin,
+    },
+  });
+});
+
+/**
  * @route   POST | api/v1/auth/refresh
  * @desc    Rotate JWT tokens (access + refresh)
  * @access  Public
@@ -123,12 +143,23 @@ export const singleUser = catchAsync(async (req: Request, res: Response) => {
 export const refresh = catchAsync(async (req: Request, res: Response) => {
   const oldToken = req.cookies.refreshToken;
   if (!oldToken) throw new AppError("No refresh token", 401);
-  const decoded = jwt.verify(
-    oldToken,
-    ENV_VARS.REFRESH_JWT_SECRET!
-  ) as CustomJwtPayload;
 
-  const user = await User.findById(decoded.userId);
+  let decoded: CustomJwtPayload;
+
+  try {
+    decoded = jwt.verify(
+      oldToken,
+      ENV_VARS.REFRESH_JWT_SECRET!
+    ) as CustomJwtPayload;
+
+    if (!decoded?.userId) {
+      throw new AppError("Access token invalid or expired", 401);
+    }
+  } catch (err) {
+    throw new AppError("Refresh token expired or invalid", 401);
+  }
+
+  const user = await User.findById(decoded.userId).select("+refreshToken");
   if (!user || user.refreshToken !== oldToken)
     throw new AppError("Invalid refresh token", 403);
 
