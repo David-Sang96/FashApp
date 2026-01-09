@@ -161,7 +161,7 @@ export const refresh = catchAsync(async (req: Request, res: Response) => {
 
   const user = await User.findById(decoded.userId).select("+refreshToken");
   if (!user || user.refreshToken !== oldToken)
-    throw new AppError("Invalid refresh token", 403);
+    throw new AppError("Invalid refresh token", 401);
 
   const { accessToken, refreshToken } = generateJwtTokens(user.id);
   user.refreshToken = refreshToken;

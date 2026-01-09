@@ -5,15 +5,18 @@ export interface User {
   name: string;
   email: string;
   role: string;
-  lastLogin: string;
+  lastLogin?: string;
+  createdAt?: string;
 }
 
 interface AuthState {
   userInfo: User | null;
+  forceLogin: boolean;
 }
 
 const initialState: AuthState = {
   userInfo: null,
+  forceLogin: false,
 };
 
 const authSlice = createSlice({
@@ -25,6 +28,7 @@ const authSlice = createSlice({
     },
     clearUserInfo: (state) => {
       state.userInfo = null;
+      state.forceLogin = true;
     },
   },
 });

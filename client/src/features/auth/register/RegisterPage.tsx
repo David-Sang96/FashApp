@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRegisterMutation } from "@/store/api/userApi";
+import { useAppDispatch } from "@/store/hooks";
+import { setUserInfo } from "@/store/slices/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -29,6 +31,7 @@ const RegisterPage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [registerMutation, { isLoading }] = useRegisterMutation();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const form = useForm<formInputs>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -40,11 +43,11 @@ const RegisterPage = () => {
 
   const onSubmit = async (val: formInputs) => {
     try {
-      await registerMutation(val).unwrap();
-      toast.success("Welcome! Your account was created.");
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
+      const { message, user } = await registerMutation(val).unwrap();
+      toast.success(message);
+      dispatch(setUserInfo(user));
+
+      navigate("/", { replace: true });
     } catch (err: any) {
       toast.error(
         err?.data?.message || "Registration failed. Please try again.",

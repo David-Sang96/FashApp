@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { loginSchema } from "@/common/types/schema/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,12 +10,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useLoginMutation } from "@/store/api/userApi";
+import { useAppDispatch } from "@/store/hooks";
+import { setUserInfo } from "@/store/slices/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { Link } from "react-router";
+import {
+  AiOutlineEye,
+  AiOutlineEyeInvisible,
+  AiOutlineLoading3Quarters,
+} from "react-icons/ai";
+import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import type z from "zod";
 
@@ -22,6 +30,9 @@ type formInputs = z.infer<typeof loginSchema>;
 
 const RegisterPage = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [loginMutation, { isLoading }] = useLoginMutation();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const form = useForm<formInputs>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -30,9 +41,15 @@ const RegisterPage = () => {
     },
   });
 
-  const onSubmit = (val: formInputs) => {
-    toast.success("hi");
-    console.log(val);
+  const onSubmit = async (val: formInputs) => {
+    try {
+      const { message, user } = await loginMutation(val).unwrap();
+      toast.success(message);
+      dispatch(setUserInfo(user));
+      navigate("/", { replace: true });
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Login failed. Please try again.");
+    }
   };
   return (
     <section className="w-full">
@@ -106,9 +123,13 @@ const RegisterPage = () => {
             </div>
             <Button
               type="submit"
-              className="w-full cursor-pointer rounded-full"
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full"
+              disabled={isLoading}
             >
-              Login
+              {isLoading && (
+                <AiOutlineLoading3Quarters className="size-5 animate-spin" />
+              )}
+              {isLoading ? "Logging in..." : "Login"}
             </Button>
           </div>
         </form>
