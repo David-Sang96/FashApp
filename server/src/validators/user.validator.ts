@@ -26,7 +26,7 @@ export const registerUserValidator = [
   passwordValidator
     .isLength({ min: validation.PASSWORD_MIN_LENGTH })
     .withMessage(validationMessage.PASSWORD_MIN_LENGTH_MESSAGE)
-    .matches(validation.PASSWOED_REGEX)
+    .matches(validation.PASSWORD_REGEX)
     .withMessage(validationMessage.PASSWORD_REGEX_MESSAGE),
 ];
 

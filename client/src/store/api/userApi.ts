@@ -1,5 +1,5 @@
 import { apiSlice } from "../slices/api";
-import { clearUserInfo, setUserInfo, type User } from "../slices/auth";
+import { setUserInfo, type User } from "../slices/auth";
 import type { Login, Register } from "../types/user";
 
 interface MeResponse {
@@ -14,10 +14,9 @@ export const userApiSlice = apiSlice.injectEndpoints({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          console.log(data);
           dispatch(setUserInfo(data.user));
         } catch {
-          dispatch(clearUserInfo());
+          // dispatch(clearUserInfo());
         }
       },
     }),
@@ -36,9 +35,28 @@ export const userApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: payload,
       }),
+      // async onQueryStarted(_, { dispatch, queryFulfilled }) {
+      //   try {
+      //     const { data } = await queryFulfilled;
+      //     dispatch(setUserInfo(data.user)); //  key line for relogin after logout
+      //   } catch {
+      //     // optional: handle error
+      //   }
+      // },
+    }),
+
+    logout: builder.mutation({
+      query: () => ({
+        url: "/auth/logout",
+        method: "POST",
+      }),
     }),
   }),
 });
 
-export const { useRegisterMutation, useLoginMutation, useMeQuery } =
-  userApiSlice;
+export const {
+  useRegisterMutation,
+  useLoginMutation,
+  useMeQuery,
+  useLogoutMutation,
+} = userApiSlice;

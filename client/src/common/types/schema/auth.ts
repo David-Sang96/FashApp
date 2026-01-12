@@ -19,7 +19,7 @@ export const registerSchema = z.object({
       validation.PASSWORD_MIN_LENGTH,
       validationMessage.PASSWORD_MIN_LENGTH_MESSAGE,
     )
-    .regex(validation.PASSWOED_REGEX, validationMessage.PASSWORD_REGEX_MESSAGE),
+    .regex(validation.PASSWORD_REGEX, validationMessage.PASSWORD_REGEX_MESSAGE),
 });
 
 export const loginSchema = z.object({
@@ -30,5 +30,5 @@ export const loginSchema = z.object({
       validation.PASSWORD_MIN_LENGTH,
       validationMessage.PASSWORD_MIN_LENGTH_MESSAGE,
     )
-    .regex(validation.PASSWOED_REGEX, validationMessage.PASSWORD_REGEX_MESSAGE),
+    .regex(validation.PASSWORD_REGEX, validationMessage.PASSWORD_REGEX_MESSAGE),
 });

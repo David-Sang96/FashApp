@@ -5,4 +5,5 @@ export const ENV_VARS = {
   NODE_ENV: process.env.NODE_ENV,
   ACCESS_JWT_SECRET: process.env.ACCESS_JWT_SECRET,
   REFRESH_JWT_SECRET: process.env.REFRESH_JWT_SECRET,
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
 };

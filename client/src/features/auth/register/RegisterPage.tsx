@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useRegisterMutation } from "@/store/api/userApi";
 import { useAppDispatch } from "@/store/hooks";
-import { setUserInfo } from "@/store/slices/auth";
+// import { setUserInfo } from "@/store/slices/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -44,10 +44,19 @@ const RegisterPage = () => {
   const onSubmit = async (val: formInputs) => {
     try {
       const { message, user } = await registerMutation(val).unwrap();
-      toast.success(message);
-      dispatch(setUserInfo(user));
+      toast.success(message, {
+        description: "Please verify your email",
+        action: {
+          label: "Open email",
+          onClick: () => window.open("https://mail.google.com", "_blank"),
+        },
+      });
 
-      navigate("/", { replace: true });
+      form.reset();
+      // dispatch(setUserInfo(user));
+
+      // DON'T navigate automatically — wait for verification
+      // navigate("/", { replace: true }); <-- remove this
     } catch (err: any) {
       toast.error(
         err?.data?.message || "Registration failed. Please try again.",

@@ -8,7 +8,7 @@ const AuthLayout = () => {
         position="top-center"
         closeButton
         richColors
-        duration={2000}
+        duration={3000}
         expand={true}
       />
       <Outlet />

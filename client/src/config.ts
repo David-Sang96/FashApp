@@ -2,7 +2,7 @@ export const validation = {
   USERNAME_MIN_LENGTH: 5,
   USERNAME_MAX_LENGTH: 30,
   PASSWORD_MIN_LENGTH: 6,
-  PASSWOED_REGEX: /^[a-zA-Z0-9]+$/,
+  PASSWORD_REGEX: /^[a-zA-Z0-9]+$/,
 };
 
 export const validationMessage = {

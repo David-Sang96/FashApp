@@ -7,7 +7,7 @@ import {
 } from "@reduxjs/toolkit/query/react";
 import { clearUserInfo } from "./auth";
 
-const baseUrl =
+export const baseUrl =
   import.meta.env.VITE_MODE === "development"
     ? import.meta.env.VITE_LOCAL_SERVER_URL
     : import.meta.env.VITE_SERVER_URL;

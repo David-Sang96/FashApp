@@ -1,10 +1,12 @@
 import LoginPage from "@/features/auth/login/LoginPage";
 import RegisterPage from "@/features/auth/register/RegisterPage";
+import VerifyEmailPage from "@/features/auth/VerifyEmailPage";
 import HomePage from "@/features/home/pages/HomePage";
 import ProductDetailPage from "@/features/product-detail/pages/ProductDetailPage";
 import { createBrowserRouter } from "react-router";
 import AuthLayout from "../layouts/AuthLayout";
 import RootLayout from "../layouts/RootLayout";
+import ProtectedRoute from "./ProtectRoute";
 
 const router = createBrowserRouter([
   {
@@ -13,25 +15,28 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: (
+          <ProtectedRoute>
+            <HomePage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/product/:id",
-        element: <ProductDetailPage />,
+        element: (
+          <ProtectedRoute>
+            <ProductDetailPage />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
   {
     element: <AuthLayout />,
     children: [
-      {
-        path: "/login",
-        element: <LoginPage />,
-      },
-      {
-        path: "/register",
-        element: <RegisterPage />,
-      },
+      { path: "/login", element: <LoginPage /> },
+      { path: "/register", element: <RegisterPage /> },
+      { path: "/verify-email", element: <VerifyEmailPage /> },
     ],
   },
 ]);

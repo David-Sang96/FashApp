@@ -6,16 +6,22 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: "user" | "admin";
-  isMatchPassword(password: string): Promise<boolean>;
-  lastLogin: Date;
   refreshToken?: string;
+  emailVerified: Boolean;
+  verificationToken: String | undefined;
+  verificationTokenExpires: Date | undefined;
+  lastLogin: Date;
   createdAt: Date;
   updatedAt: Date;
+
+  isMatchPassword(password: string): Promise<boolean>;
+  isValidVerificationToken(code: string): boolean;
+  setVerificationToken(): string;
 }
 
 export interface RegisterResponse {
   success: boolean;
-  message: string;
+  message?: string;
   user: {
     _id: string;
     email: string;
@@ -27,9 +33,9 @@ export interface RegisterResponse {
 
 export interface LoginResponse {
   success: boolean;
-  message: string;
+  message?: string;
   user: {
-    _id: string;
+    _id: string | Types.ObjectId;
     email: string;
     name: string;
     role: string;

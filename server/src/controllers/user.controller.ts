@@ -1,5 +1,7 @@
+import crypto from "crypto";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import moment from "moment";
 import { ENV_VARS } from "../config/envVars";
 import { CustomJwtPayload } from "../middlewares/protect.middleware";
 import { User } from "../models/user.model";
@@ -10,6 +12,7 @@ import { catchAsync } from "../utils/catchAsync";
 import { generateJwtTokens } from "../utils/generateToken";
 import { setTokensCookies } from "../utils/setTokenCookies";
 
+const isProd = ENV_VARS.NODE_ENV === "production";
 /**
  * @route   PPOST | api/v1/auth/register
  * @desc    Register new user
@@ -17,26 +20,11 @@ import { setTokensCookies } from "../utils/setTokenCookies";
  */
 export const registerUser = catchAsync(async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
-  const newUser = await UserService.register(name, email, password);
-  const { accessToken, refreshToken } = generateJwtTokens(newUser._id);
-
-  // Save refresh token in DB
-  newUser.refreshToken = refreshToken;
-  await newUser.save({ validateBeforeSave: false }); // Skip full validation
-
-  // Set cookies using helper
-  setTokensCookies(res, accessToken, refreshToken);
+  await UserService.register(name, email, password);
 
   res.status(201).json({
     success: true,
-    message: "Register successful",
-    user: {
-      _id: newUser._id.toString(),
-      email: newUser.email,
-      name: newUser.name,
-      role: newUser.role,
-      createdAt: newUser.createdAt,
-    },
+    message: "Registration successful",
   });
 });
 
@@ -48,6 +36,7 @@ export const registerUser = catchAsync(async (req: Request, res: Response) => {
 export const loginUser = catchAsync(async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const user = await UserService.login(email, password);
+
   const { accessToken, refreshToken } = generateJwtTokens(user.id);
   user.lastLogin = new Date();
   user.refreshToken = refreshToken;
@@ -82,13 +71,13 @@ export const logoutUser = catchAsync(async (req: Request, res: Response) => {
   res
     .clearCookie("accessToken", {
       httpOnly: true,
-      sameSite: "none",
-      secure: process.env.NODE_ENV === "production",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
     })
     .clearCookie("refreshToken", {
       httpOnly: true,
-      sameSite: "none",
-      secure: process.env.NODE_ENV === "production",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
     })
     .json({ success: true, message: "Logout successful" });
 });
@@ -123,7 +112,7 @@ export const singleUser = catchAsync(async (req: Request, res: Response) => {
 export const checkAuth = catchAsync(async (req: Request, res: Response) => {
   if (!req.user) throw new AppError("User not authenticated", 401);
 
-  res.json({
+  const response: LoginResponse = {
     success: true,
     user: {
       _id: req.user._id,
@@ -132,7 +121,8 @@ export const checkAuth = catchAsync(async (req: Request, res: Response) => {
       role: req.user.role,
       lastLogin: req.user.lastLogin,
     },
-  });
+  };
+  res.json(response);
 });
 
 /**
@@ -173,4 +163,58 @@ export const refresh = catchAsync(async (req: Request, res: Response) => {
     success: true,
     message: "Tokens rotated",
   });
+});
+
+/**
+ * @route   GET | api/v1/auth/verify-email
+ * @desc    Email Verification
+ * @access  Public
+ */
+export const verifyEmail = catchAsync(async (req, res) => {
+  const { token } = req.query;
+
+  if (!token || typeof token !== "string") {
+    throw new AppError("Token missing", 400);
+  }
+
+  // hash incoming token
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await User.findOne({
+    verificationToken: hashedToken,
+  }).select("+verificationToken +verificationTokenExpires");
+
+  if (!user || moment().isAfter(moment(user.verificationTokenExpires))) {
+    throw new AppError("Token invalid or expired", 400);
+  }
+
+  if (user.emailVerified) {
+    throw new AppError("Email already verified", 400);
+  }
+
+  // Mark verified
+  user.emailVerified = true;
+  user.verificationToken = undefined;
+  user.verificationTokenExpires = undefined;
+  user.lastLogin = new Date();
+
+  // Issue tokens (verification = login)
+  const { accessToken, refreshToken } = generateJwtTokens(user.id);
+  user.refreshToken = refreshToken;
+
+  await user.save({ validateBeforeSave: false });
+  setTokensCookies(res, accessToken, refreshToken);
+
+  const response: LoginResponse = {
+    success: true,
+    message: "Email verified and logged in successfully",
+    user: {
+      _id: user._id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      lastLogin: user.lastLogin,
+    },
+  };
+  res.json(response);
 });
