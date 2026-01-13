@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import morgan from "morgan";
 import { ENV_VARS } from "./config/envVars";
+import passport from "./config/passport";
 import { errorHandler } from "./middlewares/errorHandler";
 import routes from "./routes/v1";
 
@@ -35,6 +36,8 @@ const apiLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
+
+app.use(passport.initialize());
 
 // 1. Logging & Security (The Shield)
 app

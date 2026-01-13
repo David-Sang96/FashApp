@@ -29,7 +29,9 @@ const userSchema = new Schema<IUser>(
     },
     password: {
       type: String,
-      required: true,
+      required: function (this: IUser): boolean {
+        return this.provider === "local";
+      },
       select: false,
       minlength: [
         validation.PASSWORD_MIN_LENGTH,
@@ -41,6 +43,7 @@ const userSchema = new Schema<IUser>(
       ],
     },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    provider: { type: String, enum: ["local", "google"], default: "local" },
     refreshToken: { type: String, default: null, index: true, select: false },
     emailVerified: { type: Boolean, default: false },
     verificationToken: { type: String, select: false, default: undefined },

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { registerSchema } from "@/common/types/schema/auth";
 import { Button } from "@/components/ui/button";
+import { FieldSeparator } from "@/components/ui/field";
 import {
   Form,
   FormControl,
@@ -12,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useRegisterMutation } from "@/store/api/userApi";
 import { useAppDispatch } from "@/store/hooks";
+import { baseUrl } from "@/store/slices/api";
 // import { setUserInfo } from "@/store/slices/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -21,6 +23,7 @@ import {
   AiOutlineEyeInvisible,
   AiOutlineLoading3Quarters,
 } from "react-icons/ai";
+import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import type z from "zod";
@@ -162,6 +165,20 @@ const RegisterPage = () => {
                 <AiOutlineLoading3Quarters className="size-5 animate-spin" />
               )}
               {isLoading ? "Registering..." : "Register"}
+            </Button>
+            <div className="py-5">
+              <FieldSeparator>Or continue with</FieldSeparator>
+            </div>
+            <Button
+              type="button"
+              variant={"outline"}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full"
+              onClick={() => {
+                window.location.href = `${baseUrl}/auth/google`;
+              }}
+            >
+              Login with Google
+              <FcGoogle />
             </Button>
           </div>
         </form>

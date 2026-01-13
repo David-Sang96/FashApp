@@ -13,9 +13,11 @@ export interface CustomJwtPayload extends JwtPayload {
 
 declare global {
   namespace Express {
+    // use 'User' here because Express/Passport often expect the interface to be named 'User'
+    interface User extends IUser {}
     interface Request {
       userId?: Types.ObjectId;
-      user?: IUser;
+      user?: User;
     }
   }
 }

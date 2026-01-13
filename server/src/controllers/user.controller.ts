@@ -115,7 +115,7 @@ export const checkAuth = catchAsync(async (req: Request, res: Response) => {
   const response: LoginResponse = {
     success: true,
     user: {
-      _id: req.user._id,
+      _id: req.user._id.toString(),
       name: req.user.name,
       email: req.user.email,
       role: req.user.role,
@@ -209,7 +209,7 @@ export const verifyEmail = catchAsync(async (req, res) => {
     success: true,
     message: "Email verified and logged in successfully",
     user: {
-      _id: user._id,
+      _id: user._id.toString(),
       email: user.email,
       name: user.name,
       role: user.role,

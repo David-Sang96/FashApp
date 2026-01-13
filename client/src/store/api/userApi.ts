@@ -16,6 +16,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
           const { data } = await queryFulfilled;
           dispatch(setUserInfo(data.user));
         } catch {
+          //Only logout if you get 401 after refresh token attempt
           // dispatch(clearUserInfo());
         }
       },

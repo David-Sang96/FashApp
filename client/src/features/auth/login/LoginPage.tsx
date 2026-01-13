@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { loginSchema } from "@/common/types/schema/auth";
 import { Button } from "@/components/ui/button";
+import { FieldSeparator } from "@/components/ui/field";
 import {
   Form,
   FormControl,
@@ -12,16 +13,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { useLoginMutation } from "@/store/api/userApi";
 import { useAppDispatch } from "@/store/hooks";
+import { baseUrl } from "@/store/slices/api";
 import { setUserInfo } from "@/store/slices/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-
 import {
   AiOutlineEye,
   AiOutlineEyeInvisible,
   AiOutlineLoading3Quarters,
 } from "react-icons/ai";
+import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import type z from "zod";
@@ -56,7 +58,7 @@ const RegisterPage = () => {
       <div className="space-y-3 pb-4 text-center">
         <h2 className="text-xl md:text-2xl">FASH.COM</h2>
         <p className="text-muted-foreground text-sm md:text-base">
-          Welcome to the largest store in market
+          Enter your email below to login to your account
         </p>
       </div>
       <Form {...form}>
@@ -130,6 +132,20 @@ const RegisterPage = () => {
                 <AiOutlineLoading3Quarters className="size-5 animate-spin" />
               )}
               {isLoading ? "Logging in..." : "Login"}
+            </Button>
+            <div className="py-5">
+              <FieldSeparator>Or continue with</FieldSeparator>
+            </div>
+            <Button
+              type="button"
+              variant={"outline"}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full"
+              onClick={() => {
+                window.location.href = `${baseUrl}/auth/google`;
+              }}
+            >
+              Login with Google
+              <FcGoogle />
             </Button>
           </div>
         </form>

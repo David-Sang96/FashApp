@@ -6,6 +6,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: "user" | "admin";
+  provider: "local" | "google";
   refreshToken?: string;
   emailVerified: Boolean;
   verificationToken: String | undefined;
@@ -35,7 +36,7 @@ export interface LoginResponse {
   success: boolean;
   message?: string;
   user: {
-    _id: string | Types.ObjectId;
+    _id: string;
     email: string;
     name: string;
     role: string;
