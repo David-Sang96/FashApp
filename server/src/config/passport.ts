@@ -12,24 +12,35 @@ passport.use(
     },
     async (_accessToken, _refreshToken, profile, done) => {
       try {
-        const email = profile.emails?.[0].value;
-
+        const email = profile.emails?.[0]?.value;
         if (!email) return done(null, false);
 
         let user = await User.findOne({ email });
 
-        if (!user) {
-          user = await User.create({
-            name: profile.displayName,
-            email,
-            emailVerified: true,
-            provider: "google",
-          });
+        if (user) {
+          // Case 1: local user → block Google login
+          if (user.provider === "local") {
+            return done(null, false, {
+              message: "Email already registered with password",
+            });
+          }
+
+          // Case 2: existing Google user → allow login
+          return done(null, user);
         }
 
-        done(null, user);
+        // Case 3: new user → create Google user
+        user = await User.create({
+          name: profile.displayName,
+          email,
+          emailVerified: true,
+          provider: "google",
+        });
+
+        return done(null, user);
       } catch (err) {
-        done(err, false);
+        console.error(err);
+        return done(err, false);
       }
     }
   )

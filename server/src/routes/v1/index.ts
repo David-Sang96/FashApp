@@ -23,9 +23,19 @@ router.get(
 // callback
 router.get(
   "/auth/google/callback",
-  passport.authenticate("google", { session: false }),
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: `${ENV_VARS.CLIENT_URL}/login?error=google_email_exists`,
+  }),
   (req, res) => {
     const user = req.user;
+
+    if (!user) {
+      // extra safety, usually handled by failureRedirect
+      return res.redirect(
+        `${ENV_VARS.CLIENT_URL}/login?error=google_email_exists`
+      );
+    }
 
     const { accessToken, refreshToken } = generateJwtTokens(user?.id);
     setTokensCookies(res, accessToken, refreshToken);
