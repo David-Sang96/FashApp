@@ -58,6 +58,10 @@ const RegisterPage = () => {
         "This email is already registered. Please login with email/password.",
       );
     }
+
+    if (error === "account_deactive") {
+      toast.error("This account has been deactivated.");
+    }
   }, [location]);
 
   const onSubmit = async (val: formInputs) => {

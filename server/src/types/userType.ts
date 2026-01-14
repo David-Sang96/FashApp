@@ -6,8 +6,9 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: "user" | "admin";
+  active: Boolean;
   provider: "local" | "google";
-  refreshToken?: string;
+  refreshToken?: string | undefined;
   emailVerified: Boolean;
   verificationToken: String | undefined;
   verificationTokenExpires: Date | undefined;

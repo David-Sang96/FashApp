@@ -5,11 +5,13 @@ import { protect } from "../../middlewares/protect.middleware";
 import { generateJwtTokens } from "../../utils/generateToken";
 import { setTokensCookies } from "../../utils/setTokenCookies";
 import productRoutes from "./admin/product.admin";
-import authRoutes from "./user";
+import authRoutes from "./auth";
+import userRoutes from "./user";
 
 const router = express.Router();
 
 router.use("/auth", authRoutes);
+router.use("/users", protect, userRoutes);
 router.use("/products", protect, productRoutes);
 
 // start google login
@@ -34,6 +36,12 @@ router.get(
       // extra safety, usually handled by failureRedirect
       return res.redirect(
         `${ENV_VARS.CLIENT_URL}/login?error=google_email_exists`
+      );
+    }
+
+    if (!user.active) {
+      return res.redirect(
+        `${ENV_VARS.CLIENT_URL}/login?error=account_deactive`
       );
     }
 

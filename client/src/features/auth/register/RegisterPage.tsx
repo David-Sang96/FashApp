@@ -16,7 +16,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { baseUrl } from "@/store/slices/api";
 // import { setUserInfo } from "@/store/slices/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   AiOutlineEye,
@@ -24,7 +24,7 @@ import {
   AiOutlineLoading3Quarters,
 } from "react-icons/ai";
 import { FcGoogle } from "react-icons/fc";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 import type z from "zod";
 
@@ -35,6 +35,8 @@ const RegisterPage = () => {
   const [registerMutation, { isLoading }] = useRegisterMutation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const location = useLocation();
+  const hasVerified = useRef(false);
   const form = useForm<formInputs>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -43,6 +45,25 @@ const RegisterPage = () => {
       password: "",
     },
   });
+
+  useEffect(() => {
+    //Prevent double request in StrictMode (stops the second request )
+    if (hasVerified.current) return;
+    hasVerified.current = true;
+
+    const params = new URLSearchParams(location.search);
+    const error = params.get("error");
+
+    if (error === "google_email_exists") {
+      toast.error(
+        "This email is already registered. Please login with email/password.",
+      );
+    }
+
+    if (error === "account_deactive") {
+      toast.error("This account has been deactivated.");
+    }
+  }, [location]);
 
   const onSubmit = async (val: formInputs) => {
     try {

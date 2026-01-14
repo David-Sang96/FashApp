@@ -17,7 +17,7 @@ export const validation = {
 };
 
 export const validationMessage = {
-  // User
+  // Authentication
   USERNAME_REQUIRED_MESSAGE: "Username is required",
   USERNAME_MIN_LENGTH_MESSAGE: `Name must be at least ${validation.USERNAME_MIN_LENGTH} characters`,
   USERNAME_MAX_LENGTH_MESSAGE: `Name must not be more than  ${validation.USERNAME_MAX_LENGTH} characters`,
@@ -25,6 +25,10 @@ export const validationMessage = {
   PASSWORD_REQUIRED_MESSAGE: "Password is required",
   PASSWORD_MIN_LENGTH_MESSAGE: `Password must be at least ${validation.PASSWORD_MIN_LENGTH} characters`,
   PASSWORD_REGEX_MESSAGE: "Password can only contain letters and numbers",
+  NEW_PASSWORD_REQUIRED_MESSAGE: "New password is required",
+  NEW_PASSWORD_MIN_LENGTH_MESSAGE: `New password must be at least ${validation.PASSWORD_MIN_LENGTH} characters`,
+  NEW_PASSWORD_REGEX_MESSAGE:
+    "New password can only contain letters and numbers",
 
   // Product
   PRODUCTNAME_REQUIRED_MESSAGE: "Product name is required",

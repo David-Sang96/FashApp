@@ -43,6 +43,7 @@ const userSchema = new Schema<IUser>(
       ],
     },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    active: { type: Boolean, default: true },
     provider: { type: String, enum: ["local", "google"], default: "local" },
     refreshToken: { type: String, default: null, index: true, select: false },
     emailVerified: { type: Boolean, default: false },
@@ -66,7 +67,7 @@ userSchema.methods.isMatchPassword = async function (password: string) {
   return await compare(password, this.password);
 };
 
-// Set verification code
+// Set verification token
 userSchema.methods.setVerificationToken = function () {
   const rawToken = generateToken();
   const token = crypto
