@@ -1,12 +1,12 @@
 import express from "express";
 import {
   allUsers,
-  deactivateAccount,
   singleUser,
+  updateUser,
 } from "../../controllers/user.controller";
 import { validateRequest } from "../../middlewares/validateRequest.middlware";
 import {
-  deactiveValidator,
+  updateUserValidator,
   userIDValidator,
 } from "../../validators/user.validator";
 
@@ -15,6 +15,6 @@ const router = express.Router();
 router.get("/:id", userIDValidator, validateRequest, singleUser);
 router.get("/", allUsers);
 
-router.delete("/me", deactiveValidator, validateRequest, deactivateAccount);
+router.put("/me", updateUserValidator, validateRequest, updateUser);
 
 export default router;

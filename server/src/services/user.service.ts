@@ -4,7 +4,7 @@ import { AppError } from "../utils/AppError";
 
 export class UserService {
   static async getUsers() {
-    const users = await User.find().select("-__v");
+    const users = await User.find({ active: true }).select("-__v");
     return users;
   }
 
@@ -13,18 +13,16 @@ export class UserService {
     return user;
   }
 
-  static async deleteUser(currentUser: IUser, password: string) {
+  static async updateUser(name: string, currentUser: IUser) {
     const user = await User.findOne({
-      email: currentUser?.email,
-      _id: currentUser?._id,
-    }).select("+password");
+      email: currentUser.email,
+      _id: currentUser._id,
+    });
     if (!user) throw new AppError("User not found", 404);
 
-    const isMatch = await user.isMatchPassword(password);
-    if (!isMatch) throw new AppError("Invalid credentials", 401);
-
-    user.active = false;
-    user.refreshToken = undefined;
+    user.name = name;
     await user.save({ validateBeforeSave: false });
+
+    return user;
   }
 }

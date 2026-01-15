@@ -57,4 +57,19 @@ export class AuthService {
 
     await user.save({ validateBeforeSave: false });
   }
+
+  static async deactivate(currentUser: IUser, password: string) {
+    const user = await User.findOne({
+      email: currentUser?.email,
+      _id: currentUser?._id,
+    }).select("+password");
+    if (!user) throw new AppError("User not found", 404);
+
+    const isMatch = await user.isMatchPassword(password);
+    if (!isMatch) throw new AppError("Invalid credentials", 401);
+
+    user.active = false;
+    user.refreshToken = undefined;
+    await user.save({ validateBeforeSave: false });
+  }
 }

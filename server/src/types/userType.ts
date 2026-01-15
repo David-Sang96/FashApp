@@ -16,31 +16,35 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
 
-  isMatchPassword(password: string): Promise<boolean>;
-  isValidVerificationToken(code: string): boolean;
+  isMatchPassword(password: string): Promise<Boolean>;
+  isValidVerificationToken(code: string): Boolean;
   setVerificationToken(): string;
 }
 
 export interface RegisterResponse {
-  success: boolean;
+  success: Boolean;
   message?: string;
   user: {
     _id: string;
     email: string;
     name: string;
     role: string;
+    provider: string;
+    emailVerified: Boolean;
     createdAt: Date;
   };
 }
 
 export interface LoginResponse {
-  success: boolean;
+  success: Boolean;
   message?: string;
   user: {
     _id: string;
     email: string;
     name: string;
     role: string;
+    provider: string;
+    emailVerified: Boolean;
     lastLogin: Date;
   };
 }

@@ -11,7 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useLoginMutation } from "@/store/api/userApi";
+import { useLoginMutation } from "@/store/api/authApi";
 import { useAppDispatch } from "@/store/hooks";
 import { baseUrl } from "@/store/slices/api";
 import { setUserInfo } from "@/store/slices/auth";
@@ -164,6 +164,7 @@ const RegisterPage = () => {
               onClick={() => {
                 window.location.href = `${baseUrl}/auth/google`;
               }}
+              disabled={isLoading}
             >
               Login with Google
               <FcGoogle />

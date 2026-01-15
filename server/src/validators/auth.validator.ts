@@ -52,3 +52,9 @@ export const changePasswordValidator = [
       return true;
     }),
 ];
+
+export const deactiveValidator = passwordValidator
+  .isLength({ min: validation.PASSWORD_MIN_LENGTH })
+  .withMessage(validationMessage.PASSWORD_MIN_LENGTH_MESSAGE)
+  .matches(validation.PASSWORD_REGEX)
+  .withMessage(validationMessage.PASSWORD_REGEX_MESSAGE);

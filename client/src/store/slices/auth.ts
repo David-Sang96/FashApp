@@ -5,6 +5,8 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  emailVerified: boolean;
+  provider: "local" | "google";
   lastLogin?: string;
   createdAt?: string;
 }

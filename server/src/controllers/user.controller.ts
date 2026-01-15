@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { UserService } from "../services/user.service";
+import { LoginResponse } from "../types/userType";
 import { AppError } from "../utils/AppError";
 import { catchAsync } from "../utils/catchAsync";
 
@@ -25,18 +26,24 @@ export const singleUser = catchAsync(async (req: Request, res: Response) => {
   res.json({ success: true, user });
 });
 
-/**
- * @route   DELETE | api/v1/auth/me
- * @desc    Account delection
- * @access  Private
- */
+export const updateUser = catchAsync(async (req: Request, res: Response) => {
+  const { name } = req.body;
+  if (!req.user) throw new AppError("Unauthorized", 401);
 
-export const deactivateAccount = catchAsync(
-  async (req: Request, res: Response) => {
-    const { password } = req.body;
-    if (!req.user) throw new AppError("Unauthorized", 401);
+  const user = await UserService.updateUser(name, req.user);
 
-    await UserService.deleteUser(req.user, password);
-    res.json({ success: true, message: "Account deactivated" });
-  }
-);
+  const response: LoginResponse = {
+    success: true,
+    message: "Updated successfully",
+    user: {
+      _id: user._id.toString(),
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      lastLogin: user.lastLogin,
+      emailVerified: user.emailVerified,
+      provider: user.provider,
+    },
+  };
+  res.json(response);
+});

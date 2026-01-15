@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
-import { useMeQuery } from "@/store/api/userApi";
+import { useMeQuery } from "@/store/api/authApi";
 import { Outlet } from "react-router";
 import Footer from "../components/Footer";
 import HeadingContainer from "../components/topbar/HeadingContainer";
@@ -17,9 +17,9 @@ const RootLayout = () => {
   // }, [forceLogin, navigate]);
 
   return (
-    <main className="flex h-dvh flex-col">
+    <main className="3xl:w-[80%] flex h-dvh flex-col">
       <HeadingContainer />
-      <section className="mx-auto w-full max-w-7xl flex-1 px-2 py-10">
+      <section className="flex-1 px-4 pt-4 pb-10">
         <Outlet />
       </section>
       <Footer />

@@ -11,4 +11,10 @@ export const validationMessage = {
   EMAIL_MESSAGE: "Please enter a valid email",
   PASSWORD_MIN_LENGTH_MESSAGE: `Password must be at least ${validation.PASSWORD_MIN_LENGTH} characters`,
   PASSWORD_REGEX_MESSAGE: "Password can only contain letters and numbers",
+  CURRENT_PASSWORD_MIN_LENGTH_MESSAGE: `Current password must be at least ${validation.PASSWORD_MIN_LENGTH} characters`,
+  CURRENT_PASSWORD_REGEX_MESSAGE:
+    "Current password can only contain letters and numbers",
+  NEW_PASSWORD_MIN_LENGTH_MESSAGE: `New password must be at least ${validation.PASSWORD_MIN_LENGTH} characters`,
+  NEW_PASSWORD_REGEX_MESSAGE:
+    "New password can only contain letters and numbers",
 };

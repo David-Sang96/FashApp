@@ -65,7 +65,7 @@ const Footer = ({
   ],
 }: Footer2Props) => {
   return (
-    <section className="mx-auto w-full max-w-7xl">
+    <section className="px-4">
       <div className="px-2 py-5">
         <footer>
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">

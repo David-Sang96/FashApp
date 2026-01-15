@@ -11,7 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useRegisterMutation } from "@/store/api/userApi";
+import { useRegisterMutation } from "@/store/api/authApi";
 import { useAppDispatch } from "@/store/hooks";
 import { baseUrl } from "@/store/slices/api";
 // import { setUserInfo } from "@/store/slices/auth";

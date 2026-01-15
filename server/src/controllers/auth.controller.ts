@@ -54,6 +54,8 @@ export const loginUser = catchAsync(async (req: Request, res: Response) => {
       name: user.name,
       role: user.role,
       lastLogin: user.lastLogin,
+      emailVerified: user.emailVerified,
+      provider: user.provider,
     },
   };
   res.json(response);
@@ -74,11 +76,13 @@ export const logoutUser = catchAsync(async (req: Request, res: Response) => {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
+      path: "/",
     })
     .clearCookie("refreshToken", {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
+      path: "/api/v1/auth/refresh",
     })
     .json({ success: true, message: "Logout successful" });
 });
@@ -99,6 +103,8 @@ export const checkAuth = catchAsync(async (req: Request, res: Response) => {
       email: req.user.email,
       role: req.user.role,
       lastLogin: req.user.lastLogin,
+      emailVerified: req.user.emailVerified,
+      provider: req.user.provider,
     },
   };
   res.json(response);
@@ -193,6 +199,8 @@ export const verifyEmail = catchAsync(async (req, res) => {
       name: user.name,
       role: user.role,
       lastLogin: user.lastLogin,
+      emailVerified: user.emailVerified,
+      provider: user.provider,
     },
   };
   res.json(response);
@@ -209,5 +217,46 @@ export const changePassword = catchAsync(async (req, res) => {
 
   await AuthService.changePassword(currentPassword, newPassword, req.user);
 
-  res.json({ success: true, message: "Password updated.Please login again" });
+  res
+    .clearCookie("accessToken", {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      path: "/",
+    })
+    .clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      path: "/api/v1/auth/refresh",
+    })
+    .json({ success: true, message: "Password updated.Please login again" });
 });
+
+/**
+ * @route   DELETE | api/v1/auth/me
+ * @desc    Account delection
+ * @access  Private
+ */
+export const deactivateAccount = catchAsync(
+  async (req: Request, res: Response) => {
+    const { password } = req.body;
+    if (!req.user) throw new AppError("Unauthorized", 401);
+
+    await AuthService.deactivate(req.user, password);
+    res
+      .clearCookie("accessToken", {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
+        path: "/",
+      })
+      .clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
+        path: "/api/v1/auth/refresh",
+      })
+      .json({ success: true, message: "Account deactivated" });
+  }
+);

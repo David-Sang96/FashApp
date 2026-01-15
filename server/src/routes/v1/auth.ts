@@ -3,12 +3,14 @@ import { protect } from "../../middlewares/protect.middleware";
 import { validateRequest } from "../../middlewares/validateRequest.middlware";
 import {
   changePasswordValidator,
+  deactiveValidator,
   loginUserValidator,
   registerUserValidator,
 } from "../../validators/auth.validator";
 import {
   changePassword,
   checkAuth,
+  deactivateAccount,
   loginUser,
   logoutUser,
   refresh,
@@ -32,6 +34,14 @@ router.patch(
   changePasswordValidator,
   validateRequest,
   changePassword
+);
+
+router.delete(
+  "/me",
+  protect,
+  deactiveValidator,
+  validateRequest,
+  deactivateAccount
 );
 
 export default router;
