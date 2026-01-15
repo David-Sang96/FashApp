@@ -8,9 +8,9 @@ import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
 import { ENV_VARS } from "./config/envVars";
 import passport from "./config/passport";
-import { swaggerSpec } from "./docs/swagger";
 import { errorHandler } from "./middlewares/errorHandler";
 import routes from "./routes/v1";
+import { swaggerSpec } from "./swagger";
 
 export const app = express();
 

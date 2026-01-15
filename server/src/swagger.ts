@@ -1,5 +1,5 @@
-import { authSwaggerDocs } from "./auth.docs";
-import { userSwaggerDocs } from "./user.docs";
+import { authSwaggerDocs } from "./docs/auth.docs";
+import { userSwaggerDocs } from "./docs/user.docs";
 
 const swaggerDefinition = {
   openapi: "3.0.0",
