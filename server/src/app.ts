@@ -5,8 +5,10 @@ import express, { json, urlencoded } from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import morgan from "morgan";
+import swaggerUi from "swagger-ui-express";
 import { ENV_VARS } from "./config/envVars";
 import passport from "./config/passport";
+import { swaggerSpec } from "./docs/swagger";
 import { errorHandler } from "./middlewares/errorHandler";
 import routes from "./routes/v1";
 
@@ -37,6 +39,7 @@ const apiLimiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(passport.initialize());
 
 // 1. Logging & Security (The Shield)

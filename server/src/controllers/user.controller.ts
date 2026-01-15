@@ -5,7 +5,7 @@ import { AppError } from "../utils/AppError";
 import { catchAsync } from "../utils/catchAsync";
 
 /**
- * @route   GET | /api/v1/auth/users
+ * @route   GET | /api/v1/users
  * @desc    Get all users
  * @access  Private
  */
@@ -15,7 +15,7 @@ export const allUsers = catchAsync(async (req: Request, res: Response) => {
 });
 
 /**
- * @route   GET | /api/v1/auth/user/:id
+ * @route   GET | /api/v1/users/:id
  * @desc    Get user base on ID
  * @access  Private
  */
@@ -26,6 +26,11 @@ export const singleUser = catchAsync(async (req: Request, res: Response) => {
   res.json({ success: true, user });
 });
 
+/**
+ * @route   PUT | /api/v1/users/me
+ * @desc    Update user info
+ * @access  Private
+ */
 export const updateUser = catchAsync(async (req: Request, res: Response) => {
   const { name } = req.body;
   if (!req.user) throw new AppError("Unauthorized", 401);
