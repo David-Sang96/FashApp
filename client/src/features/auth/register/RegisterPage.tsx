@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRegisterMutation } from "@/store/api/authApi";
-import { useAppDispatch } from "@/store/hooks";
 import { baseUrl } from "@/store/slices/api";
 // import { setUserInfo } from "@/store/slices/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,7 +23,7 @@ import {
   AiOutlineLoading3Quarters,
 } from "react-icons/ai";
 import { FcGoogle } from "react-icons/fc";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useLocation } from "react-router";
 import { toast } from "sonner";
 import type z from "zod";
 
@@ -33,8 +32,6 @@ type formInputs = z.infer<typeof registerSchema>;
 const RegisterPage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [registerMutation, { isLoading }] = useRegisterMutation();
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const location = useLocation();
   const hasVerified = useRef(false);
   const form = useForm<formInputs>({
@@ -67,7 +64,7 @@ const RegisterPage = () => {
 
   const onSubmit = async (val: formInputs) => {
     try {
-      const { message, user } = await registerMutation(val).unwrap();
+      const { message } = await registerMutation(val).unwrap();
       toast.success(message, {
         description: "Please verify your email",
         action: {
@@ -77,10 +74,6 @@ const RegisterPage = () => {
       });
 
       form.reset();
-      // dispatch(setUserInfo(user));
-
-      // DON'T navigate automatically — wait for verification
-      // navigate("/", { replace: true }); <-- remove this
     } catch (err: any) {
       toast.error(
         err?.data?.message || "Registration failed. Please try again.",
@@ -89,7 +82,12 @@ const RegisterPage = () => {
   };
 
   return (
-    <section className="w-full">
+    <section>
+      {/* Floating orbs */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="bg-primary/20 absolute top-1/4 left-1/4 h-96 w-96 animate-pulse rounded-full blur-3xl" />
+        <div className="bg-accent/20 absolute right-1/4 bottom-1/4 h-80 w-80 animate-pulse rounded-full blur-3xl delay-1000" />
+      </div>
       <div className="space-y-3 pb-4 text-center">
         <h2 className="text-xl md:text-2xl">FASH.COM</h2>
         <p className="text-muted-foreground text-sm md:text-base">
@@ -103,7 +101,7 @@ const RegisterPage = () => {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
+                <FormLabel className="mb-1">Name</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Enter your name"
@@ -120,7 +118,7 @@ const RegisterPage = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="mb-1"> Email</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Enter your email"
@@ -140,7 +138,7 @@ const RegisterPage = () => {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <div className="group relative">
+                  <div className="group relative mt-1">
                     <Input
                       placeholder="Enter your password"
                       {...field}
@@ -173,7 +171,7 @@ const RegisterPage = () => {
               <div className="text-primary text-sm">
                 Already have an account?
               </div>
-              <Button variant={"link"} asChild type="button">
+              <Button variant={"link"} asChild type="button" className="p-0">
                 <Link to={"/login"}>Login here</Link>
               </Button>
             </div>

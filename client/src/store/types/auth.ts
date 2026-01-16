@@ -16,3 +16,12 @@ export interface UpdatePassword {
 export interface Deactivate {
   password: string;
 }
+
+export interface ForgetPasswordEmail {
+  email: string;
+}
+
+export interface ForgetPassword {
+  newPassword: string;
+  confirmPassword: string;
+}

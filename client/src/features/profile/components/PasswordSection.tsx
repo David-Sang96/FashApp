@@ -226,7 +226,7 @@ const PasswordSection = () => {
                   {isLoading && (
                     <AiOutlineLoading3Quarters className="size-4 animate-spin" />
                   )}
-                  {isLoading ? "Updating..." : "       Update Password"}
+                  {isLoading ? "Updating..." : "Update Password"}
                 </Button>
                 <Button
                   variant="outline"

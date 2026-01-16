@@ -107,7 +107,8 @@ export const checkAuth = catchAsync(async (req: Request, res: Response) => {
       provider: req.user.provider,
     },
   };
-  res.json(response);
+  //“Never store this response. Not in memory, not on disk, not in back/forward cache.”
+  res.setHeader("Cache-Control", "no-store").json(response);
 });
 
 /**

@@ -2,6 +2,8 @@ import { apiSlice } from "../slices/api";
 import { setUserInfo, type User } from "../slices/auth";
 import type {
   Deactivate,
+  ForgetPassword,
+  ForgetPasswordEmail,
   Login,
   Register,
   UpdatePassword,
@@ -12,7 +14,7 @@ interface MeResponse {
   user: User;
 }
 
-export const userApiSlice = apiSlice.injectEndpoints({
+export const authApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     me: builder.query<MeResponse, void>({
       query: () => "/auth/me",
@@ -66,6 +68,22 @@ export const userApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    forgetEmail: builder.mutation({
+      query: (payload: ForgetPasswordEmail) => ({
+        url: "/auth/change-password",
+        method: "PATCH",
+        body: payload,
+      }),
+    }),
+
+    forgetPassword: builder.mutation({
+      query: (payload: ForgetPassword) => ({
+        url: "/auth/change-password",
+        method: "PATCH",
+        body: payload,
+      }),
+    }),
+
     deactivate: builder.mutation({
       query: (payload: Deactivate) => ({
         url: "/auth/me",
@@ -83,4 +101,6 @@ export const {
   useLogoutMutation,
   useUpdatePasswordMutation,
   useDeactivateMutation,
-} = userApiSlice;
+  useForgetEmailMutation,
+  useForgetPasswordMutation,
+} = authApiSlice;

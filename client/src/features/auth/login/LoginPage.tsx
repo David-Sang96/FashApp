@@ -74,8 +74,14 @@ const RegisterPage = () => {
       toast.error(err?.data?.message || "Login failed. Please try again.");
     }
   };
+
   return (
-    <section className="w-full">
+    <section>
+      {/* Floating orbs */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="bg-primary/20 absolute top-1/4 left-1/4 h-96 w-96 animate-pulse rounded-full blur-3xl" />
+        <div className="bg-accent/20 absolute right-1/4 bottom-1/4 h-80 w-80 animate-pulse rounded-full blur-3xl delay-1000" />
+      </div>
       <div className="space-y-3 pb-4 text-center">
         <h2 className="text-xl md:text-2xl">FASH.COM</h2>
         <p className="text-muted-foreground text-sm md:text-base">
@@ -89,7 +95,7 @@ const RegisterPage = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="mb-1">Email</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Enter your email"
@@ -109,7 +115,7 @@ const RegisterPage = () => {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <div className="group relative">
+                  <div className="group relative mt-1">
                     <Input
                       placeholder="Enter your password"
                       {...field}
@@ -139,9 +145,11 @@ const RegisterPage = () => {
           />
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <div className="text-primary text-sm">Don't have an account?</div>
-              <Button variant={"link"} asChild type="button">
-                <Link to={"/register"}>Register here</Link>
+              <Button variant={"link"} asChild type="button" className="p-0">
+                <Link to={"/forget-password"}>Forget password?</Link>
+              </Button>
+              <Button variant={"link"} asChild type="button" className="p-0">
+                <Link to={"/register"}>Don't have an account?</Link>
               </Button>
             </div>
             <Button
