@@ -22,6 +22,12 @@ export interface ForgetPasswordEmail {
 }
 
 export interface ForgetPassword {
+  token: string;
   newPassword: string;
   confirmPassword: string;
+}
+
+export interface ResendEmail {
+  email: string;
+  type: "verify" | "reset";
 }

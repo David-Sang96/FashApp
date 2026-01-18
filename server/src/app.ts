@@ -18,7 +18,7 @@ const whiteList = ["https://example.com", ENV_VARS.CLIENT_URL];
 const corsOptions = {
   origin: function (
     origin: any,
-    callback: (err: Error | null, origin?: any) => void
+    callback: (err: Error | null, origin?: any) => void,
   ) {
     // allow requests with no origin (eg. mobile app and curl request(s) like postman third party software)
     if (!origin) return callback(null, true);
@@ -29,6 +29,8 @@ const corsOptions = {
     }
   },
   credentials: true, // Allow cookies or authorization header
+  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS", "PUT"],
 };
 
 const apiLimiter = rateLimit({

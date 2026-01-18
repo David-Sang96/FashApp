@@ -11,7 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useLoginMutation } from "@/store/api/authApi";
+import { useLoginMutation, useResendEmailMutation } from "@/store/api/authApi";
 import { useAppDispatch } from "@/store/hooks";
 import { baseUrl } from "@/store/slices/api";
 import { setUserInfo } from "@/store/slices/auth";
@@ -32,7 +32,11 @@ type formInputs = z.infer<typeof loginSchema>;
 
 const RegisterPage = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [showResend, setShowResend] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
   const [loginMutation, { isLoading }] = useLoginMutation();
+  const [resendEmailMutation, { isLoading: isResending }] =
+    useResendEmailMutation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const location = useLocation();
@@ -64,6 +68,26 @@ const RegisterPage = () => {
     }
   }, [location]);
 
+  const handleResendVerification = async () => {
+    try {
+      const res = await resendEmailMutation({
+        email: loginEmail,
+        type: "verify",
+      }).unwrap();
+
+      toast.success(res.message, {
+        description: "Please verify your email",
+        action: {
+          label: "Open email",
+          onClick: () => window.open("https://mail.google.com", "_blank"),
+        },
+      });
+      setShowResend(false);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to resend email");
+    }
+  };
+
   const onSubmit = async (val: formInputs) => {
     try {
       const { message, user } = await loginMutation(val).unwrap();
@@ -71,7 +95,13 @@ const RegisterPage = () => {
       dispatch(setUserInfo(user));
       navigate("/", { replace: true });
     } catch (err: any) {
-      toast.error(err?.data?.message || "Login failed. Please try again.");
+      const message = err?.data?.message;
+      toast.error(message || "Login failed");
+
+      if (message === "Email not verified") {
+        setShowResend(true);
+        setLoginEmail(val.email);
+      }
     }
   };
 
@@ -162,6 +192,20 @@ const RegisterPage = () => {
               )}
               {isLoading ? "Logging in..." : "Login"}
             </Button>
+            {showResend && (
+              <Button
+                type="button"
+                variant="link"
+                className="w-full cursor-pointer text-sm"
+                onClick={handleResendVerification}
+                disabled={isResending}
+              >
+                {isResending && (
+                  <AiOutlineLoading3Quarters className="size-4 animate-spin" />
+                )}
+                {isResending ? "Sending..." : "Resend verification email"}
+              </Button>
+            )}
             <div className="py-5">
               <FieldSeparator>Or continue with</FieldSeparator>
             </div>
@@ -172,7 +216,7 @@ const RegisterPage = () => {
               onClick={() => {
                 window.location.href = `${baseUrl}/auth/google`;
               }}
-              disabled={isLoading}
+              disabled={isLoading || isResending}
             >
               Login with Google
               <FcGoogle />

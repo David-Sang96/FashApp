@@ -49,9 +49,11 @@ const userSchema = new Schema<IUser>(
     emailVerified: { type: Boolean, default: false },
     verificationToken: { type: String, select: false, default: undefined },
     verificationTokenExpires: { type: Date, select: false, default: undefined },
+    passwordResetToken: { type: String, select: false, default: undefined },
+    passwordResetExpires: { type: Date, select: false, default: undefined },
     lastLogin: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Hash password
@@ -76,6 +78,18 @@ userSchema.methods.setVerificationToken = function () {
     .digest("hex");
   this.verificationToken = token;
   this.verificationTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
+  return rawToken;
+};
+
+// Set reset password token
+userSchema.methods.setPasswordResetToken = function () {
+  const rawToken = generateToken();
+  const token = crypto
+    .createHash("sha256")
+    .update(rawToken.trim())
+    .digest("hex");
+  this.passwordResetToken = token;
+  this.passwordResetExpires = new Date(Date.now() + 1 * 60 * 1000);
   return rawToken;
 };
 

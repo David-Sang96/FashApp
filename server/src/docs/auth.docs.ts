@@ -50,6 +50,43 @@ export const authSwaggerDocs = {
     },
   },
 
+  "/auth/google": {
+    get: {
+      summary: "Redirect to Google OAuth for login",
+      tags: ["Auth"],
+      responses: {
+        302: { description: "Redirects user to Google login page" },
+      },
+    },
+  },
+
+  "/auth/google/callback": {
+    get: {
+      summary: "Google OAuth callback endpoint",
+      tags: ["Auth"],
+      parameters: [
+        {
+          in: "query",
+          name: "code",
+          required: true,
+          schema: { type: "string" },
+          description: "Authorization code returned by Google",
+        },
+        {
+          in: "query",
+          name: "state",
+          required: false,
+          schema: { type: "string" },
+          description: "Optional state parameter",
+        },
+      ],
+      responses: {
+        200: { description: "Login successful and tokens issued" },
+        400: { description: "Invalid Google OAuth code" },
+      },
+    },
+  },
+
   "/auth/logout": {
     post: {
       summary: "Logout user",
@@ -76,20 +113,7 @@ export const authSwaggerDocs = {
       summary: "Get current logged-in user",
       tags: ["Auth"],
       responses: {
-        200: {
-          description: "Returns user info",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  success: { type: "boolean", example: true },
-                  user: { type: "object" },
-                },
-              },
-            },
-          },
-        },
+        200: { description: "Returns user info" },
         401: { description: "User not authenticated" },
       },
       security: [{ cookieAuth: [] }],
@@ -135,6 +159,129 @@ export const authSwaggerDocs = {
       responses: {
         200: { description: "Email verified and logged in" },
         400: { description: "Invalid or expired token" },
+      },
+    },
+  },
+
+  "/auth/forget-password": {
+    post: {
+      summary: "Send email to reset password",
+      tags: ["Auth"],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              required: ["email"],
+              properties: {
+                email: { type: "string", example: "test@mail.com" },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: { description: "Reset password email sent" },
+      },
+    },
+  },
+
+  "/auth/reset-password": {
+    post: {
+      summary: "Reset the user's password using token",
+      tags: ["Auth"],
+      parameters: [
+        {
+          in: "query",
+          name: "token",
+          required: true,
+          schema: { type: "string" },
+          description: "Reset password token sent via email",
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              required: ["newPassword"],
+              properties: {
+                newPassword: { type: "string", example: "newpass123" },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: { description: "Password reset successful" },
+        400: { description: "Invalid or expired token" },
+      },
+    },
+  },
+
+  "/auth/verify-reset-token": {
+    get: {
+      summary: "Verify if reset password token is valid",
+      tags: ["Auth"],
+      parameters: [
+        {
+          in: "query",
+          name: "token",
+          required: true,
+          schema: { type: "string" },
+          description: "Reset password token",
+        },
+      ],
+      responses: {
+        200: {
+          description: "Token is valid",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  success: { type: "boolean", example: true },
+                  message: { type: "string", example: "Token is valid" },
+                  email: { type: "string", example: "test@mail.com" },
+                },
+              },
+            },
+          },
+        },
+        400: { description: "Invalid or expired token" },
+      },
+    },
+  },
+
+  "/auth/resend": {
+    post: {
+      summary: "Resend verification or reset password email",
+      tags: ["Auth"],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              required: ["email", "type"],
+              properties: {
+                email: { type: "string", example: "test@mail.com" },
+                type: {
+                  type: "string",
+                  enum: ["verify", "reset"],
+                  example: "verify",
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Email sent successfully",
+        },
       },
     },
   },

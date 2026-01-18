@@ -10,8 +10,10 @@ export interface IUser extends Document {
   provider: "local" | "google";
   refreshToken?: string | undefined;
   emailVerified: Boolean;
-  verificationToken: String | undefined;
+  verificationToken: string | undefined;
   verificationTokenExpires: Date | undefined;
+  passwordResetToken: string | undefined;
+  passwordResetExpires: Date | undefined;
   lastLogin: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -19,6 +21,7 @@ export interface IUser extends Document {
   isMatchPassword(password: string): Promise<Boolean>;
   isValidVerificationToken(code: string): Boolean;
   setVerificationToken(): string;
+  setPasswordResetToken(): string;
 }
 
 export interface RegisterResponse {

@@ -6,6 +6,7 @@ import type {
   ForgetPasswordEmail,
   Login,
   Register,
+  ResendEmail,
   UpdatePassword,
 } from "../types/auth";
 
@@ -70,16 +71,24 @@ export const authApiSlice = apiSlice.injectEndpoints({
 
     forgetEmail: builder.mutation({
       query: (payload: ForgetPasswordEmail) => ({
-        url: "/auth/change-password",
-        method: "PATCH",
+        url: "/auth/forget-password",
+        method: "POST",
         body: payload,
       }),
     }),
 
     forgetPassword: builder.mutation({
       query: (payload: ForgetPassword) => ({
-        url: "/auth/change-password",
-        method: "PATCH",
+        url: `/auth/reset-password?token=${payload.token}`,
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
+    resendEmail: builder.mutation({
+      query: (payload: ResendEmail) => ({
+        url: "/auth/resend",
+        method: "POST",
         body: payload,
       }),
     }),
@@ -103,4 +112,5 @@ export const {
   useDeactivateMutation,
   useForgetEmailMutation,
   useForgetPasswordMutation,
+  useResendEmailMutation,
 } = authApiSlice;

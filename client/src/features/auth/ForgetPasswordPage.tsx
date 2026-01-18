@@ -25,6 +25,7 @@ type formInputs = z.infer<typeof emailSchema>;
 const ForgotPasswordPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [forgetEmailMutation, { isLoading }] = useForgetEmailMutation();
+
   const form = useForm<formInputs>({
     resolver: zodResolver(emailSchema),
     defaultValues: {
@@ -34,7 +35,7 @@ const ForgotPasswordPage = () => {
 
   const onSubmit = async (val: formInputs) => {
     try {
-      //   await forgetEmailMutation(val).unwrap();
+      await forgetEmailMutation(val).unwrap();
       setIsSubmitted(true);
     } catch (err: any) {
       toast.error(

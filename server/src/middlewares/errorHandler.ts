@@ -7,10 +7,11 @@ export const errorHandler = (
   err: Error | AppError,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   let statusCode = err instanceof AppError ? err.statusCode : 500;
   let message = err.message || "Internal Server Error";
+  let email = err instanceof AppError ? err.email : undefined;
 
   // Mongoose validation error
   if (err instanceof mongoose.Error.ValidationError) {
@@ -22,6 +23,7 @@ export const errorHandler = (
   res.status(statusCode).json({
     success: false,
     message,
+    email,
     stack: ENV_VARS.NODE_ENV === "development" && err.stack,
   });
 };

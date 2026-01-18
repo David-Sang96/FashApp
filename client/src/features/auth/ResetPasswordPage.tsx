@@ -11,28 +11,45 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useForgetPasswordMutation } from "@/store/api/authApi";
+import { baseUrl } from "@/store/slices/api";
+import type { ForgetPassword } from "@/store/types/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Lock, Shield } from "lucide-react";
-import { useState } from "react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Loader2,
+  Lock,
+  RefreshCw,
+  Shield,
+  XCircle,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   AiOutlineEye,
   AiOutlineEyeInvisible,
   AiOutlineLoading3Quarters,
 } from "react-icons/ai";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import type z from "zod";
 
 type formInputs = z.infer<typeof resetPasswordSchema>;
 
 const ResetPasswordPage = () => {
+  const [tokenValid, setTokenValid] = useState<boolean | null>(null);
+  const [message, setMessage] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [isNewPasswordVisible, setIsNewPasswordVisible] = useState(false);
+  const [email, setEmail] = useState("");
   const [isNewConfrimPasswordVisible, setIsConfrimNewPasswordVisible] =
     useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [forgetPasswordMutation, { isLoading }] = useForgetPasswordMutation();
+  const [searchParams] = useSearchParams();
+  const hasVerified = useRef(false);
   const form = useForm<formInputs>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
@@ -40,10 +57,74 @@ const ResetPasswordPage = () => {
       confirmPassword: "",
     },
   });
+  const token = searchParams.get("token") ?? "";
+
+  useEffect(() => {
+    if (hasVerified.current) return;
+    hasVerified.current = true;
+    const verifyToken = async () => {
+      if (!token) {
+        setTokenValid(false);
+        return;
+      }
+      try {
+        const res = await fetch(
+          `${baseUrl}/auth/verify-reset-token?token=${token}`,
+        );
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          setTokenValid(false);
+          setEmail(data?.email || "");
+          setMessage("Link has been expired.");
+          return;
+        }
+        setTokenValid(true);
+      } catch {
+        setTokenValid(false);
+      }
+    };
+
+    verifyToken();
+  }, [token]);
+
+  const handleResendEmail = async () => {
+    if (!email)
+      return toast.error("No email available to resend for reset password.");
+    setResendLoading(true);
+
+    try {
+      const res = await fetch(`${baseUrl}/auth/resend`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, type: "reset" }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setMessage(data.message || "Failed to resend email.");
+        return;
+      }
+
+      setTokenValid(true);
+      setMessage(data.message || "A new reset email has been sent!");
+      setEmailSent(true);
+    } catch {
+      setMessage("Failed to resend email.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
 
   const onSubmit = async (val: formInputs) => {
+    const values: ForgetPassword = {
+      newPassword: val.newPassword,
+      confirmPassword: val.confirmPassword,
+      token,
+    };
     try {
-      await forgetPasswordMutation(val).unwrap();
+      await forgetPasswordMutation(values).unwrap();
       setIsSuccess(true);
     } catch (err: any) {
       toast.error(
@@ -51,6 +132,87 @@ const ResetPasswordPage = () => {
       );
     }
   };
+
+  if (tokenValid === null) {
+    return <p>Checking reset link...</p>;
+  }
+
+  if (tokenValid === false) {
+    return (
+      <div className="p-6 text-center">
+        <div className="pointer-events-none fixed inset-0 overflow-hidden">
+          <div className="bg-primary/20 absolute top-1/4 left-1/4 h-96 w-96 animate-pulse rounded-full blur-3xl" />
+          <div className="bg-accent/20 absolute right-1/4 bottom-1/4 h-80 w-80 animate-pulse rounded-full blur-3xl delay-1000" />
+        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+            className="mb-3 flex justify-center"
+          >
+            <XCircle className="text-destructive h-10 w-10" />
+          </motion.div>
+        </AnimatePresence>
+        <p className="mb-4">{message}</p>
+
+        <Button
+          className="w-full cursor-pointer rounded-full"
+          onClick={handleResendEmail}
+          disabled={resendLoading}
+        >
+          {resendLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Sending...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Resend Reset Password Email
+            </>
+          )}
+        </Button>
+      </div>
+    );
+  }
+
+  if (emailSent) {
+    return (
+      <motion.div
+        key="success"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="py-4 text-center"
+      >
+        {/* Success icon */}
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+          className="bg-success/10 mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full"
+        >
+          <CheckCircle2 className="text-success h-8 w-8" />
+        </motion.div>
+
+        <h2 className="text-foreground mb-2 text-2xl font-semibold">
+          Check your email
+        </h2>
+        <p className="text-muted-foreground mb-2 text-sm leading-relaxed">
+          We sent a password reset link to
+        </p>
+        <p className="text-foreground mb-8 font-medium">{email}</p>
+
+        <Button
+          onClick={() => window.open("https://mail.google.com", "_blank")}
+          className="w-full cursor-pointer rounded-full"
+        >
+          Open email app
+        </Button>
+      </motion.div>
+    );
+  }
 
   return (
     <section>

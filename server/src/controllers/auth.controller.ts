@@ -1,7 +1,5 @@
-import crypto from "crypto";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import moment from "moment";
 import { ENV_VARS } from "../config/envVars";
 import { CustomJwtPayload } from "../middlewares/protect.middleware";
 import { User } from "../models/user.model";
@@ -125,7 +123,7 @@ export const refresh = catchAsync(async (req: Request, res: Response) => {
   try {
     decoded = jwt.verify(
       oldToken,
-      ENV_VARS.REFRESH_JWT_SECRET!
+      ENV_VARS.REFRESH_JWT_SECRET!,
     ) as CustomJwtPayload;
 
     if (!decoded?.userId) {
@@ -162,27 +160,7 @@ export const verifyEmail = catchAsync(async (req, res) => {
   if (!token || typeof token !== "string") {
     throw new AppError("Token missing", 400);
   }
-
-  // hash incoming token
-  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-
-  const user = await User.findOne({
-    verificationToken: hashedToken,
-  }).select("+verificationToken +verificationTokenExpires");
-
-  if (!user || moment().isAfter(moment(user.verificationTokenExpires))) {
-    throw new AppError("Token invalid or expired", 400);
-  }
-
-  if (user.emailVerified) {
-    throw new AppError("Email already verified", 400);
-  }
-
-  // Mark verified
-  user.emailVerified = true;
-  user.verificationToken = undefined;
-  user.verificationTokenExpires = undefined;
-  user.lastLogin = new Date();
+  const user = await AuthService.verifyEmail(token);
 
   // Issue tokens (verification = login)
   const { accessToken, refreshToken } = generateJwtTokens(user.id);
@@ -259,5 +237,66 @@ export const deactivateAccount = catchAsync(
         path: "/api/v1/auth/refresh",
       })
       .json({ success: true, message: "Account deactivated" });
-  }
+  },
 );
+
+/**
+ * @route   POST | api/v1/auth/forget-password
+ * @desc    Send email for forget password
+ * @access  Public
+ */
+export const sendForgetPasswordEmail = catchAsync(
+  async (req: Request, res: Response) => {
+    const { email } = req.body;
+
+    await AuthService.forgetPasswordEmail(email);
+    res.json({ success: true, message: "Reset password email sent" });
+  },
+);
+
+/**
+ * @route   POST | api/v1/auth/reset-password
+ * @desc    Reset the password
+ * @access  Public
+ */
+export const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const { newPassword } = req.body;
+  const { token } = req.query;
+
+  if (!token || typeof token !== "string") {
+    throw new AppError("Token missing", 400);
+  }
+
+  await AuthService.resetPassword(token, newPassword);
+  res.json({ success: true, message: "Password reset successful" });
+});
+
+/**
+ * @route   POST | api/v1/auth/resend
+ * @desc    Resend the email for token
+ * @access  Public
+ */
+export const resendEmail = catchAsync(async (req, res) => {
+  const { email, type } = req.body;
+
+  await AuthService.resendEmail(email, type);
+  res.json({
+    success: true,
+    message: `${type === "verify" ? "Verification" : "Password reset"} email sent successfully`,
+  });
+});
+
+export const verifyResetToken = catchAsync(async (req, res) => {
+  const { token } = req.query;
+
+  if (!token || typeof token !== "string") {
+    throw new AppError("Token missing", 400);
+  }
+  const user = await AuthService.verifyResetToken(token);
+
+  res.json({
+    success: true,
+    message: "Token is valid",
+    email: user.email,
+  });
+});

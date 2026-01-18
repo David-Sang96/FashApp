@@ -1,16 +1,22 @@
-import { body } from "express-validator";
+import { body, query } from "express-validator";
 import { validation, validationMessage } from "./schemaValidation";
 
-const emailValidator = body("email")
+export const emailValidator = body("email")
   .trim()
   .isEmail()
   .withMessage(validationMessage.EMAIL_REGEX_MESSAGE)
   .normalizeEmail(); // converts "User@Gmail.com" to "user@gmail.com"
 
-const passwordValidator = body("password")
+export const passwordValidator = body("password")
   .trim()
   .notEmpty()
   .withMessage(validationMessage.PASSWORD_REQUIRED_MESSAGE);
+
+export const tokenValidator = query("token")
+  .notEmpty()
+  .withMessage("Token is required")
+  .isLength({ min: 32 })
+  .withMessage("Invalid token format");
 
 export const registerUserValidator = [
   body("name")
@@ -58,3 +64,24 @@ export const deactiveValidator = passwordValidator
   .withMessage(validationMessage.PASSWORD_MIN_LENGTH_MESSAGE)
   .matches(validation.PASSWORD_REGEX)
   .withMessage(validationMessage.PASSWORD_REGEX_MESSAGE);
+
+export const resetPasswordValidator = [
+  tokenValidator,
+  body("newPassword")
+    .trim()
+    .notEmpty()
+    .withMessage(validationMessage.PASSWORD_REQUIRED_MESSAGE)
+    .isLength({ min: validation.PASSWORD_MIN_LENGTH })
+    .withMessage(validationMessage.PASSWORD_MIN_LENGTH_MESSAGE)
+    .matches(validation.PASSWORD_REGEX)
+    .withMessage(validationMessage.PASSWORD_REGEX_MESSAGE),
+];
+
+export const resendEmailValidator = [
+  emailValidator,
+  body("type")
+    .isString()
+    .withMessage("Type must be a string")
+    .isIn(["verify", "reset"])
+    .withMessage("Type must be either 'verify' or 'reset'"),
+];
