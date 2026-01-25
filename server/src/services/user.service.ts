@@ -13,7 +13,12 @@ export class UserService {
     return user;
   }
 
-  static async updateUser(name: string, currentUser: IUser) {
+  static async updateUser(
+    name: string,
+    email: string,
+    role: "admin" | "user",
+    currentUser: IUser,
+  ) {
     const user = await User.findOne({
       email: currentUser.email,
       _id: currentUser._id,
@@ -21,6 +26,8 @@ export class UserService {
     if (!user) throw new AppError("User not found", 404);
 
     user.name = name;
+    user.email = email;
+    user.role = role;
     await user.save({ validateBeforeSave: false });
 
     return user;

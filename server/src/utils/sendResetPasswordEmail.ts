@@ -4,7 +4,7 @@ export const sendResetPasswordEmail = async (to: string, token: string) => {
   const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
 
   const { data, error } = await resend.emails.send({
-    from: "FashApp <test@resend.dev>",
+    from: "FashApp <no-reply@davidsang.dev>",
     to,
     subject: "Reset your FashApp password",
     html: `

@@ -32,10 +32,10 @@ export const singleUser = catchAsync(async (req: Request, res: Response) => {
  * @access  Private
  */
 export const updateUser = catchAsync(async (req: Request, res: Response) => {
-  const { name } = req.body;
+  const { name, email, role } = req.body;
   if (!req.user) throw new AppError("Unauthorized", 401);
 
-  const user = await UserService.updateUser(name, req.user);
+  const user = await UserService.updateUser(name, email, role, req.user);
 
   const response: LoginResponse = {
     success: true,

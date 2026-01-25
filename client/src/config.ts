@@ -17,4 +17,6 @@ export const validationMessage = {
   NEW_PASSWORD_MIN_LENGTH_MESSAGE: `New password must be at least ${validation.PASSWORD_MIN_LENGTH} characters`,
   NEW_PASSWORD_REGEX_MESSAGE:
     "New password can only contain letters and numbers",
+  ROLE_MESSAGE: "Role must be either 'user' or 'admin'",
+  PROVIDER_MESSAGE: "Provider must be either 'local' or 'google'",
 };

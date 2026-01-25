@@ -74,6 +74,11 @@ export const updateUserInfoSchema = z.object({
       validationMessage.USERNAME_MAX_LENGTH_MESSAGE,
     ),
   email: z.email(validationMessage.EMAIL_MESSAGE),
+  role: z.enum(["user", "admin"] as const, validationMessage.ROLE_MESSAGE),
+  provider: z.enum(
+    ["local", "google"] as const,
+    validationMessage.PROVIDER_MESSAGE,
+  ),
 });
 
 export const acccountDeactivateSchema = z.object({

@@ -8,12 +8,17 @@ const ProfileHomePage = () => {
   const user = useAppSelector((store) => store.auth.userInfo);
   if (!user) return null;
 
-  const { name, email, provider } = user;
+  const { name, email, provider, role } = user;
 
   return (
     <section className="mx-auto max-w-7xl">
       <ProfileHeader name={name} email={email} />
-      <UserInfoSection email={email} name={name} />
+      <UserInfoSection
+        email={email}
+        name={name}
+        provider={provider}
+        role={role}
+      />
       {provider === "local" && <PasswordSection />}
       <DeleteAccountSection />
     </section>

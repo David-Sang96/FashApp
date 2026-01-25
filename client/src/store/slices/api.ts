@@ -49,7 +49,6 @@ const baseQueryWithReauth: BaseQueryFn<
     } else {
       // refresh failed → logout
       api.dispatch(clearUserInfo());
-      console.log("Refresh token expired → logging out");
     }
   }
 

@@ -12,7 +12,7 @@ export const sendVerificationEmail = async (to: string, token: string) => {
   const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
 
   const { data, error } = await resend.emails.send({
-    from: "FashApp <test@resend.dev>",
+    from: "FashApp <no-reply@davidsang.dev>",
     to,
     subject: "Verify Your FashApp Account ✨",
     html: `
