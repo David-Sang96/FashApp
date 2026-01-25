@@ -7,6 +7,7 @@ import HomePage from "@/features/home/pages/HomePage";
 import ProductDetailPage from "@/features/product-detail/pages/ProductDetailPage";
 import ProfileHomePage from "@/features/profile/pages/ProfileHomePage";
 import { createBrowserRouter } from "react-router";
+import NotFound from "../components/NotFound";
 import AppLayout from "../layouts/AppLayout";
 import AuthLayout from "../layouts/AuthLayout";
 import RootLayout from "../layouts/RootLayout";
@@ -92,6 +93,7 @@ const router = createBrowserRouter([
           },
         ],
       },
+      { path: "*", element: <NotFound /> },
     ],
   },
 ]);
