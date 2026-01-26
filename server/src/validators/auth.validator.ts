@@ -1,4 +1,5 @@
 import { body, query } from "express-validator";
+import { AppError } from "../utils/AppError";
 import { validation, validationMessage } from "./schemaValidation";
 
 export const emailValidator = body("email")
@@ -84,4 +85,11 @@ export const resendEmailValidator = [
     .withMessage("Type must be a string")
     .isIn(["verify", "reset"])
     .withMessage("Type must be either 'verify' or 'reset'"),
+];
+
+export const uploadImageValidator = [
+  body("avatar").custom((_, { req }) => {
+    if (!req.file) throw new AppError("Avatar is required", 400);
+    return true;
+  }),
 ];

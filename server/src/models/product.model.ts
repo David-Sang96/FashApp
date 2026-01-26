@@ -73,8 +73,8 @@ const productSchema = new Schema<IProduct>(
     images: {
       type: [
         {
-          url: { type: String, required: true },
-          public_alt: { type: String, required: false },
+          image_url: { type: String, required: true },
+          public_id: { type: String, required: false },
         },
       ],
       required: [true, validationMessage.IMAGES_REQUIRED_MESSAGE],
@@ -107,7 +107,7 @@ const productSchema = new Schema<IProduct>(
       ref: "User",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Product = model<IProduct>("Product", productSchema);

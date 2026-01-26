@@ -28,8 +28,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDeactivateMutation } from "@/store/api/authApi";
-import { useAppDispatch } from "@/store/hooks";
-import { clearUserInfo } from "@/store/slices/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -50,7 +48,6 @@ const DeleteAccountSection = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [deactivateMutation, { isLoading }] = useDeactivateMutation();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const form = useForm<formInputs>({
     resolver: zodResolver(acccountDeactivateSchema),
     defaultValues: {
@@ -68,7 +65,6 @@ const DeleteAccountSection = () => {
     try {
       const { message } = await deactivateMutation(val).unwrap();
       toast.success(message);
-      dispatch(clearUserInfo());
       navigate("/login", { replace: true });
     } catch (err: any) {
       toast.error(

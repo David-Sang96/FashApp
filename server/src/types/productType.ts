@@ -1,8 +1,8 @@
 import { Document, Types } from "mongoose";
 
 export interface Image {
-  url: string;
-  public_alt: string;
+  image_url: string;
+  public_id: string;
 }
 
 export interface IProduct extends Document {

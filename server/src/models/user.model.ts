@@ -24,6 +24,7 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
       unique: true,
+      index: true,
       lowercase: true,
       match: [validation.EMAIL_REGEX, validationMessage.EMAIL_REGEX_MESSAGE],
     },
@@ -42,9 +43,23 @@ const userSchema = new Schema<IUser>(
         validationMessage.PASSWORD_REGEX_MESSAGE,
       ],
     },
-    role: { type: String, enum: ["user", "admin"], default: "user" },
+    avatar: {
+      image_url: { type: String, match: /^https?:\/\//, default: undefined },
+      public_id: { type: String, default: undefined },
+    },
+
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
     active: { type: Boolean, default: true },
-    provider: { type: String, enum: ["local", "google"], default: "local" },
+    provider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+      immutable: true,
+    },
     refreshToken: { type: String, default: null, index: true, select: false },
     emailVerified: { type: Boolean, default: false },
     verificationToken: { type: String, select: false, default: undefined },
@@ -65,9 +80,20 @@ userSchema.pre("save", async function (next) {
 });
 
 // Password check method
-userSchema.methods.isMatchPassword = async function (password: string) {
+userSchema.methods.isMatchPassword = async function (
+  password: string,
+): Promise<boolean> {
+  if (!this.password) return false;
   return await compare(password, this.password);
 };
+
+// Prevents { avatar: {} } in DB
+userSchema.pre("save", function (next) {
+  if (this.avatar && !this.avatar.image_url && !this.avatar.public_id) {
+    this.avatar = undefined;
+  }
+  next();
+});
 
 // Set verification token
 userSchema.methods.setVerificationToken = function () {
@@ -89,9 +115,21 @@ userSchema.methods.setPasswordResetToken = function () {
     .update(rawToken.trim())
     .digest("hex");
   this.passwordResetToken = token;
-  this.passwordResetExpires = new Date(Date.now() + 1 * 60 * 1000);
+  this.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000);
   return rawToken;
 };
+
+userSchema.methods.updateLastLogin = function () {
+  this.lastLogin = new Date();
+  return this.save({ validateBeforeSave: false });
+};
+
+userSchema.pre("save", function (next) {
+  if (this.provider !== "local") {
+    this.password = "";
+  }
+  next();
+});
 
 // Check if verification code is valid - deprecated
 userSchema.methods.isValidVerificationToken = function (token: string) {

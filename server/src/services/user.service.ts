@@ -1,16 +1,14 @@
-import { User } from "../models/user.model";
+import { UserRepositary } from "../repositories/user.repository";
 import { IUser } from "../types/userType";
 import { AppError } from "../utils/AppError";
 
 export class UserService {
   static async getUsers() {
-    const users = await User.find({ active: true }).select("-__v");
-    return users;
+    return await UserRepositary.findAllActiveUser();
   }
 
   static async getUser(id: string) {
-    const user = await User.findById(id).select("-__v");
-    return user;
+    return await UserRepositary.findByIdOrEmail({ id });
   }
 
   static async updateUser(
@@ -19,16 +17,17 @@ export class UserService {
     role: "admin" | "user",
     currentUser: IUser,
   ) {
-    const user = await User.findOne({
+    const user = await UserRepositary.findByIdOrEmail({
       email: currentUser.email,
-      _id: currentUser._id,
+      id: currentUser._id,
     });
+
     if (!user) throw new AppError("User not found", 404);
 
     user.name = name;
     user.email = email;
     user.role = role;
-    await user.save({ validateBeforeSave: false });
+    await UserRepositary.save(user);
 
     return user;
   }

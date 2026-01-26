@@ -1,5 +1,6 @@
 import express from "express";
 import { protect } from "../../middlewares/protect.middleware";
+import { upload } from "../../middlewares/upload.middleware";
 import { validateRequest } from "../../middlewares/validateRequest.middlware";
 import {
   changePasswordValidator,
@@ -10,6 +11,7 @@ import {
   resendEmailValidator,
   resetPasswordValidator,
   tokenValidator,
+  uploadImageValidator,
 } from "../../validators/auth.validator";
 import {
   changePassword,
@@ -22,6 +24,7 @@ import {
   resendEmail,
   resetPassword,
   sendForgetPasswordEmail,
+  uploadOrUpdateAvatar,
   verifyEmail,
   verifyResetToken,
 } from "./../../controllers/auth.controller";
@@ -54,6 +57,14 @@ router.post(
   resetPassword,
 );
 router.post("/resend", resendEmailValidator, validateRequest, resendEmail);
+router.post(
+  "/upload",
+  protect,
+  upload.single("avatar"), // multer populates req.file
+  uploadImageValidator, // now validator can see req.file
+  validateRequest,
+  uploadOrUpdateAvatar,
+);
 
 router.patch(
   "/change-password",

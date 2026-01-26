@@ -1,10 +1,14 @@
 import { Document, Types } from "mongoose";
 
 export interface IUser extends Document {
-  _id: Types.ObjectId; // <- explicit
+  _id: Types.ObjectId;
   name: string;
   email: string;
   password: string;
+  avatar?: {
+    image_url?: string;
+    public_id?: string;
+  };
   role: "user" | "admin";
   active: Boolean;
   provider: "local" | "google";
@@ -49,5 +53,6 @@ export interface LoginResponse {
     provider: string;
     emailVerified: Boolean;
     lastLogin: Date;
+    avatarUrl?: string;
   };
 }

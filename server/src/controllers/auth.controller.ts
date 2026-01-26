@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { ENV_VARS } from "../config/envVars";
 import { CustomJwtPayload } from "../middlewares/protect.middleware";
 import { User } from "../models/user.model";
+import { AuthRepository } from "../repositories/auth.repository";
 import { AuthService } from "../services/auth.service";
 import { LoginResponse } from "../types/userType";
 import { AppError } from "../utils/AppError";
@@ -86,6 +87,23 @@ export const logoutUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 /**
+ * @route   POST | /api/v1/auth/upload
+ * @desc    Update or upload user avatar
+ * @access  Private
+ */
+export const uploadOrUpdateAvatar = catchAsync(
+  async (req: Request, res: Response) => {
+    const user = await AuthService.uploadOrUpdateImage(req);
+
+    res.status(200).json({
+      success: true,
+      message: "Avatar uploaded successfully",
+      avatarUrl: user.avatar?.image_url,
+    });
+  },
+);
+
+/**
  * @route   GET | /api/v1/auth/me
  * @desc    Check Authentication
  * @access  Private
@@ -93,16 +111,20 @@ export const logoutUser = catchAsync(async (req: Request, res: Response) => {
 export const checkAuth = catchAsync(async (req: Request, res: Response) => {
   if (!req.user) throw new AppError("User not authenticated", 401);
 
+  const user = await AuthRepository.findByEmail(req.user.email);
+  if (!user) throw new AppError("User not authenticated", 401);
+
   const response: LoginResponse = {
     success: true,
     user: {
-      _id: req.user._id.toString(),
-      name: req.user.name,
-      email: req.user.email,
-      role: req.user.role,
-      lastLogin: req.user.lastLogin,
-      emailVerified: req.user.emailVerified,
-      provider: req.user.provider,
+      _id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      lastLogin: user.lastLogin,
+      emailVerified: user.emailVerified,
+      provider: user.provider,
+      avatarUrl: user.avatar?.image_url,
     },
   };
   //“Never store this response. Not in memory, not on disk, not in back/forward cache.”
@@ -137,9 +159,13 @@ export const refresh = catchAsync(async (req: Request, res: Response) => {
   if (!user || user.refreshToken !== oldToken)
     throw new AppError("Invalid refresh token", 401);
 
+  if (!user.active) {
+    throw new AppError("Account deactivated", 403);
+  }
+
   const { accessToken, refreshToken } = generateJwtTokens(user.id);
   user.refreshToken = refreshToken;
-  await user.save();
+  await user.save({ validateBeforeSave: false });
 
   setTokensCookies(res, accessToken, refreshToken);
 
@@ -286,6 +312,11 @@ export const resendEmail = catchAsync(async (req, res) => {
   });
 });
 
+/**
+ * @route   POST | api/v1/auth/verify-reset-token
+ * @desc    Resend the email for verification
+ * @access  Public
+ */
 export const verifyResetToken = catchAsync(async (req, res) => {
   const { token } = req.query;
 

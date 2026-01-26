@@ -25,8 +25,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useUpdateUserMutation } from "@/store/api/userApi";
-import { useAppDispatch } from "@/store/hooks";
-import { setUserInfo } from "@/store/slices/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Save, User } from "lucide-react";
 import { useState } from "react";
@@ -35,7 +33,7 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { toast } from "sonner";
 import type z from "zod";
 
-interface UserInfoSectionProps {
+export interface UserInfoProps {
   name: string;
   email: string;
   role: "user" | "admin";
@@ -44,15 +42,9 @@ interface UserInfoSectionProps {
 
 type formInputs = z.infer<typeof updateUserInfoSchema>;
 
-const UserInfoSection = ({
-  name,
-  email,
-  provider,
-  role,
-}: UserInfoSectionProps) => {
+const UserInfoSection = ({ name, email, provider, role }: UserInfoProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [updateUserMutation, { isLoading }] = useUpdateUserMutation();
-  const dispatch = useAppDispatch();
   const form = useForm<formInputs>({
     resolver: zodResolver(updateUserInfoSchema),
     defaultValues: {
@@ -65,17 +57,9 @@ const UserInfoSection = ({
 
   const onSubmit = async (val: formInputs) => {
     try {
-      const { message, user } = await updateUserMutation(val).unwrap();
+      const { message } = await updateUserMutation(val).unwrap();
       toast.success(message);
-      dispatch(setUserInfo(user));
       setIsEditing(false);
-
-      form.reset({
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        provider: user.provider,
-      });
     } catch (err: any) {
       toast.error(err?.data?.message || "Update failed. Please try again.");
     }

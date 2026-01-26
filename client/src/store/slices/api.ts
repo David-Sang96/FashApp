@@ -43,7 +43,7 @@ const baseQueryWithReauth: BaseQueryFn<
       extraOptions,
     );
 
-    if (refreshResult.data) {
+    if (!refreshResult.error) {
       //Frontend still knows nothing but cookies are updated automatically so retry original request
       result = await baseQuery(args, api, extraOptions);
     } else {
@@ -58,5 +58,6 @@ const baseQueryWithReauth: BaseQueryFn<
 export const apiSlice = createApi({
   reducerPath: "apiSlice",
   baseQuery: baseQueryWithReauth,
+  tagTypes: ["User"],
   endpoints: () => ({}),
 });

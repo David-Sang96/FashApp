@@ -29,6 +29,7 @@ export const validationMessage = {
   NEW_PASSWORD_MIN_LENGTH_MESSAGE: `New password must be at least ${validation.PASSWORD_MIN_LENGTH} characters`,
   NEW_PASSWORD_REGEX_MESSAGE:
     "New password can only contain letters and numbers",
+  AVATAR_REQUIRED_MESSAGE: "Image is required",
 
   // Product
   PRODUCTNAME_REQUIRED_MESSAGE: "Product name is required",

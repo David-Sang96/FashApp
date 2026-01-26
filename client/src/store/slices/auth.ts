@@ -1,18 +1,8 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-
-export interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: "user" | "admin";
-  emailVerified: boolean;
-  provider: "local" | "google";
-  lastLogin?: string;
-  createdAt?: string;
-}
+import type { UserInfo } from "../types/user";
 
 export interface AuthState {
-  userInfo: User | null;
+  userInfo: UserInfo | null;
   isCheckingAuth: boolean;
 }
 
@@ -25,7 +15,7 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUserInfo: (state, action: PayloadAction<User>) => {
+    setUserInfo: (state, action: PayloadAction<UserInfo>) => {
       state.userInfo = action.payload;
       state.isCheckingAuth = false;
     },

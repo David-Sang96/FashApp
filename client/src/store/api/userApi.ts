@@ -1,10 +1,10 @@
+import type { UserInfoProps } from "@/features/profile/components/UserInfoSection";
 import { apiSlice } from "../slices/api";
-import type { UserInfo } from "../types/user";
 
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     updateUser: builder.mutation({
-      query: (payload: UserInfo) => ({
+      query: (payload: UserInfoProps) => ({
         url: "/users/me",
         method: "PUT",
         body: payload,

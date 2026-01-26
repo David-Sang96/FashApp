@@ -1,5 +1,5 @@
 import { apiSlice } from "../slices/api";
-import { setUserInfo, type User } from "../slices/auth";
+import { clearUserInfo, setUserInfo } from "../slices/auth";
 import type {
   Deactivate,
   ForgetPassword,
@@ -9,23 +9,25 @@ import type {
   ResendEmail,
   UpdatePassword,
 } from "../types/auth";
+import type { UserInfo } from "../types/user";
 
 interface MeResponse {
   success: boolean;
-  user: User;
+  user: UserInfo;
 }
 
 export const authApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     me: builder.query<MeResponse, void>({
       query: () => "/auth/me",
+      providesTags: (result) =>
+        result ? [{ type: "User", id: result.user._id }] : ["User"],
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setUserInfo(data.user));
-        } catch {
-          //Only logout if you get 401 after refresh token attempt
-          // dispatch(clearUserInfo());
+          dispatch(setUserInfo(data.user)); // auth state only
+        } catch (err) {
+          console.error("Failed to fetch user: ", err);
         }
       },
     }),
@@ -44,14 +46,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: payload,
       }),
-      // async onQueryStarted(_, { dispatch, queryFulfilled }) {
-      //   try {
-      //     const { data } = await queryFulfilled;
-      //     dispatch(setUserInfo(data.user)); //  key line for relogin after logout
-      //   } catch {
-      //     // optional: handle error
-      //   }
-      // },
+      invalidatesTags: ["User"],
     }),
 
     logout: builder.mutation({
@@ -59,6 +54,24 @@ export const authApiSlice = apiSlice.injectEndpoints({
         url: "/auth/logout",
         method: "POST",
       }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+        } finally {
+          // Always clear local state, even if backend fails
+          dispatch(clearUserInfo());
+          dispatch(apiSlice.util.resetApiState()); //  clears RTK Query cache | Reset API cache on logout
+        }
+      },
+    }),
+
+    uploadAvatar: builder.mutation({
+      query: (formData: FormData) => ({
+        url: "/auth/upload",
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["User"],
     }),
 
     updatePassword: builder.mutation({
@@ -67,6 +80,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
         body: payload,
       }),
+      invalidatesTags: ["User"],
     }),
 
     forgetEmail: builder.mutation({
@@ -99,6 +113,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: "DELETE",
         body: payload,
       }),
+      invalidatesTags: ["User"],
     }),
   }),
 });
@@ -108,6 +123,7 @@ export const {
   useLoginMutation,
   useMeQuery,
   useLogoutMutation,
+  useUploadAvatarMutation,
   useUpdatePasswordMutation,
   useDeactivateMutation,
   useForgetEmailMutation,

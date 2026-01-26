@@ -12,9 +12,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useLoginMutation, useResendEmailMutation } from "@/store/api/authApi";
-import { useAppDispatch } from "@/store/hooks";
 import { baseUrl } from "@/store/slices/api";
-import { setUserInfo } from "@/store/slices/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -38,7 +36,6 @@ const RegisterPage = () => {
   const [resendEmailMutation, { isLoading: isResending }] =
     useResendEmailMutation();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const location = useLocation();
   const hasVerified = useRef(false);
   const form = useForm<formInputs>({
@@ -90,9 +87,8 @@ const RegisterPage = () => {
 
   const onSubmit = async (val: formInputs) => {
     try {
-      const { message, user } = await loginMutation(val).unwrap();
+      const { message } = await loginMutation(val).unwrap();
       toast.success(message);
-      dispatch(setUserInfo(user));
       navigate("/", { replace: true });
     } catch (err: any) {
       const message = err?.data?.message;

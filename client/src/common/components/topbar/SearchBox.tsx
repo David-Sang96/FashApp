@@ -2,7 +2,7 @@ import { SearchIcon } from "lucide-react";
 
 const SearchBox = () => {
   return (
-    <form className="relative w-full">
+    <form className="relative w-2xl">
       <input
         type="text"
         placeholder="Search products..."

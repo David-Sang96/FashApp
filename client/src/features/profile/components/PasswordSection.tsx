@@ -18,8 +18,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useUpdatePasswordMutation } from "@/store/api/authApi";
-import { useAppDispatch } from "@/store/hooks";
-import { clearUserInfo } from "@/store/slices/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock, Shield } from "lucide-react";
 import { useState } from "react";
@@ -43,7 +41,6 @@ const PasswordSection = () => {
     useState(false);
   const [isChanging, setIsChanging] = useState(false);
   const [updatePasswordMutation, { isLoading }] = useUpdatePasswordMutation();
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const form = useForm<formInputs>({
     resolver: zodResolver(updatePasswordSchema),
@@ -58,7 +55,6 @@ const PasswordSection = () => {
     try {
       const { message } = await updatePasswordMutation(val).unwrap();
       toast.success(message);
-      dispatch(clearUserInfo());
       navigate("/login", { replace: true });
     } catch (err: any) {
       toast.error(
