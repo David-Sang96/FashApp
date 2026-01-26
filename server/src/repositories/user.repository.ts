@@ -1,6 +1,7 @@
 import { Document, Types } from "mongoose";
 import { User } from "../models/user.model";
 import { IUser } from "../types/userType";
+import { AppError } from "../utils/AppError";
 
 export class UserRepositary {
   static async findByIdOrEmail(params: {
@@ -8,7 +9,7 @@ export class UserRepositary {
     email?: string;
   }) {
     if (!params.id && !params.email) {
-      throw new Error("Either id or email must be provided");
+      throw new AppError("Either id or email must be provided", 400);
     }
 
     const query: Record<string, any> = {};
@@ -24,6 +25,7 @@ export class UserRepositary {
   }
 
   static async save(user: IUser & Document) {
+    ``;
     return user.save({ validateBeforeSave: false });
   }
 }

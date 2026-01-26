@@ -80,7 +80,7 @@ docker buildx build --platform linux/amd64,linux/arm64 -t <your-docker-registry>
 
 All routes are documented via **Swagger**:
 
-- **Auth Routes:** `/auth/register`, `/auth/login`, `/auth/logout`, `/auth/refresh`, `/auth/me`, `/auth/change-password`, `/auth/verify-email`
+- **Auth Routes:** `/auth/register`, `/auth/login`, `/auth/logout`, `/auth/refresh`, `/auth/me`, `/auth/change-password`, `/auth/verify-email`,`/auth/upload`
 - **User Routes:** `/users`, `/users/:id`, `/users/me`
 
 Access Swagger UI at: `http://localhost:4000/docs`
@@ -91,16 +91,46 @@ Access Swagger UI at: `http://localhost:4000/docs`
 
 ```
 src/
-├─ controllers/      # Route handlers
-├─ services/         # Business logic
-├─ models/           # MongoDB schemas
-├─ middlewares/      # Auth, error handling
-├─ utils/            # JWT, cookies, AppError, etc.
-├─ schemas/          # Zod validation
-├─ docs/             # Swagger docs
-├─ routes/           # Route definitions
-├─ app.ts            # Express app entry
-└─ swagger.ts        # Swagger config
+├─ controllers/       # Route handlers (Express request handlers)
+│   ├─ auth.controller.ts
+│   └─ user.controller.ts
+│
+├─ services/          # Business logic (calls repositories, processes data)
+│   ├─ auth.service.ts
+│   └─ user.service.ts
+│
+├─ repositories/      # DB access (mongoose queries)
+│   └─ auth.repository.ts
+│
+├─ models/            # MongoDB schemas
+│   └─ user.model.ts
+│
+├─ middlewares/       # Middleware (auth, error handling, validators)
+│   ├─ auth.middleware.ts
+│   ├─ error.middleware.ts
+│   └─ upload.middleware.ts
+│
+├─ schemas/           # Request validation (Zod or Joi)
+│   └─ auth.schema.ts
+│
+├─ utils/             # Utilities (JWT, cookies, AppError, email, etc.)
+│   ├─ jwt.ts
+│   ├─ cookie.ts
+│   └─ appError.ts
+│
+├─ docs/              # Swagger/OpenAPI docs
+│   └─ auth.docs.ts
+│
+├─ routes/            # Express route definitions
+│   ├─ auth.routes.ts
+│   └─ user.routes.ts
+│
+├─ config/            # Environment/config files
+│   └─ db.ts
+│
+├─ app.ts             # Express app entrypoint
+└─ swagger.ts         # Swagger setup and config
+
 ```
 
 ---

@@ -1,4 +1,59 @@
 export const authSwaggerDocs = {
+  "/auth/upload": {
+    post: {
+      summary: "Upload or update user avatar",
+      tags: ["Auth"],
+      requestBody: {
+        required: true,
+        content: {
+          "multipart/form-data": {
+            schema: {
+              type: "object",
+              required: ["avatar"],
+              properties: {
+                avatar: {
+                  type: "string",
+                  format: "binary",
+                  description: "Image file to upload as avatar",
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Avatar uploaded successfully",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  success: { type: "boolean", example: true },
+                  message: {
+                    type: "string",
+                    example: "Avatar uploaded successfully",
+                  },
+                  avatarUrl: {
+                    type: "string",
+                    example: "https://yourcdn.com/avatar123.png",
+                  },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: "Invalid file or validation error",
+        },
+        401: {
+          description: "Unauthorized — user not logged in",
+        },
+      },
+      security: [{ cookieAuth: [] }], // protected route
+    },
+  },
+
   "/auth/register": {
     post: {
       summary: "Register new user",
