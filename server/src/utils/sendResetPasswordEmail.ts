@@ -1,13 +1,18 @@
-import { resend } from "./sendVerificationEmail";
+import { resend } from "../config/resend";
+import { AppError } from "./AppError";
 
-export const sendResetPasswordEmail = async (to: string, token: string) => {
+export const sendResetPasswordEmail = async (
+  to: string,
+  token: string,
+): Promise<string> => {
   const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
 
-  const { data, error } = await resend.emails.send({
-    from: "FashApp <no-reply@davidsang.dev>",
-    to,
-    subject: "Reset your FashApp password",
-    html: `
+  try {
+    const { data, error } = await resend.emails.send({
+      from: "FashApp <no-reply@davidsang.dev>",
+      to,
+      subject: "Reset your FashApp password",
+      html: `
       <!DOCTYPE html>
       <html>
       <head>
@@ -124,7 +129,7 @@ export const sendResetPasswordEmail = async (to: string, token: string) => {
       </body>
       </html>
     `,
-    text: `Reset your FashApp password
+      text: `Reset your FashApp password
 
 Hi there,
 
@@ -138,8 +143,17 @@ If you didn't request a password reset, please ignore this email or contact our 
 
 - FashApp Team
     `,
-  });
+    });
 
-  if (error) throw new Error(error.message);
-  return data?.id;
+    if (error) throw new Error(`Email send error: ${error.message}`);
+
+    if (!data?.id) {
+      throw new Error("Resend did not return an email id");
+    }
+
+    return data?.id;
+  } catch (err) {
+    console.error("Resend sendResetPasswordEmail failed: ", err);
+    throw new AppError("Failed to send reset password email");
+  }
 };

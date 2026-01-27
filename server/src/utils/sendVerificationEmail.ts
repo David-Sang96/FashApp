@@ -1,7 +1,5 @@
-import { Resend } from "resend";
-import { ENV_VARS } from "../config/envVars";
-
-export const resend = new Resend(ENV_VARS.RESEND_API_KEY);
+import { resend } from "../config/resend";
+import { AppError } from "./AppError";
 
 interface sendVerificationEmail {
   to: string;
@@ -11,11 +9,12 @@ interface sendVerificationEmail {
 export const sendVerificationEmail = async (to: string, token: string) => {
   const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
 
-  const { data, error } = await resend.emails.send({
-    from: "FashApp <no-reply@davidsang.dev>",
-    to,
-    subject: "Verify Your FashApp Account ✨",
-    html: `
+  try {
+    const { data, error } = await resend.emails.send({
+      from: "FashApp <no-reply@davidsang.dev>",
+      to,
+      subject: "Verify Your FashApp Account ✨",
+      html: `
       <!DOCTYPE html>
       <html>
       <head>
@@ -190,7 +189,7 @@ export const sendVerificationEmail = async (to: string, token: string) => {
       </body>
       </html>
     `,
-    text: `
+      text: `
 Welcome to FashApp! 👋
 
 Hi there,
@@ -216,8 +215,17 @@ If you didn't create a FashApp account, you can safely ignore this email. No fur
 
 You're receiving this email because you signed up for a FashApp account.
     `,
-  });
+    });
 
-  if (error) throw new Error(`Email send error: ${error.message}`);
-  return data?.id;
+    if (error) throw new Error(`Email send error: ${error.message}`);
+
+    if (!data?.id) {
+      throw new Error("Resend did not return an email id");
+    }
+
+    return data?.id;
+  } catch (err) {
+    console.error("Resend sendVerificationEmail failed: ", err);
+    throw new AppError("Failed to send verification email");
+  }
 };

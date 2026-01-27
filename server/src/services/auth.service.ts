@@ -20,10 +20,7 @@ export class AuthService {
     await AuthRepository.save(newUser);
 
     // send verification email
-    const emailId = await sendVerificationEmail(email, verificationToken);
-    if (!emailId) {
-      throw new AppError("Failed to send verification email");
-    }
+    await sendVerificationEmail(email, verificationToken);
 
     return newUser;
   }
@@ -142,10 +139,7 @@ export class AuthService {
     const resetToken = user.setPasswordResetToken();
     await AuthRepository.save(user);
 
-    const emailId = await sendResetPasswordEmail(user.email, resetToken);
-    if (!emailId) {
-      throw new AppError("Failed to send reset password email");
-    }
+    await sendResetPasswordEmail(user.email, resetToken);
   }
 
   static async resetPassword(token: string, newPassword: string) {

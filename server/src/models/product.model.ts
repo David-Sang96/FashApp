@@ -73,8 +73,12 @@ const productSchema = new Schema<IProduct>(
     images: {
       type: [
         {
-          image_url: { type: String, required: true },
-          public_id: { type: String, required: false },
+          image_url: {
+            type: String,
+            required: true,
+            match: [/^https?:\/\/.+/, "image_url must be a valid URL"],
+          },
+          public_id: { type: String, required: true },
         },
       ],
       required: [true, validationMessage.IMAGES_REQUIRED_MESSAGE],

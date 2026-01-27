@@ -3,6 +3,8 @@ import {
   createProduct,
   deleteProduct,
   getAllProducts,
+  getFeaturedProducts,
+  getNewArrivalProducts,
   getProduct,
   updateProduct,
 } from "../../../controllers/admin/product.admin.controller";
@@ -17,13 +19,15 @@ import {
 const router = express.Router();
 
 router.get("/", getAllProducts);
+router.get("/new-arrival", getNewArrivalProducts);
+router.get("/feature", getFeaturedProducts);
 router.get("/:id", productIDValidator, validateRequest, getProduct);
 router.post(
   "/",
   isAdmin,
   createProductValidator,
   validateRequest,
-  createProduct
+  createProduct,
 );
 router.put(
   "/:id",
@@ -31,14 +35,14 @@ router.put(
   productIDValidator,
   updateProductValidator,
   validateRequest,
-  updateProduct
+  updateProduct,
 );
 router.delete(
   "/:id",
   isAdmin,
   productIDValidator,
   validateRequest,
-  deleteProduct
+  deleteProduct,
 );
 
 export default router;

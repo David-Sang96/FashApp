@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
-import { Product } from "../../models/product.model";
+import { CreateProductDTO, UpdateProductDTO } from "../../dtos/product.dto";
+import { ProductService } from "../../services/product.service";
 import { AppError } from "../../utils/AppError";
 import { catchAsync } from "../../utils/catchAsync";
+
+const productService = new ProductService();
 
 /**
  * @route   POST | api/v1/products
@@ -9,36 +12,9 @@ import { catchAsync } from "../../utils/catchAsync";
  * @access  Private
  */
 export const createProduct = catchAsync(async (req: Request, res: Response) => {
-  const {
-    name,
-    description,
-    price,
-    instock_count,
-    category,
-    sizes,
-    colors,
-    images,
-    is_newArrival,
-    is_feature,
-    rating_count,
-  } = req.body;
-  const product = await Product.create({
-    name,
-    description,
-    price,
-    instock_count,
-    category,
-    sizes,
-    colors,
-    images,
-    is_newArrival,
-    is_feature,
-    rating_count,
-    userId: req.userId,
-  });
-
-  if (!product) throw new AppError("Product creation failed");
-
+  if (!req.user) throw new AppError("User not authenticated", 401);
+  const data = req.body as CreateProductDTO;
+  const product = await productService.createProduct(data, req.user._id);
   res
     .status(201)
     .json({ success: true, message: "Product created successfully", product });
@@ -50,12 +26,8 @@ export const createProduct = catchAsync(async (req: Request, res: Response) => {
  * @access  Private
  */
 export const updateProduct = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const product = await Product.findByIdAndUpdate(id, req.body, {
-    new: true,
-    runValidators: true,
-  });
-  if (!product) throw new AppError("Product not found", 404);
+  const data = req.body as UpdateProductDTO;
+  const product = await productService.updateProduct(req.params.id, data);
   res.json({ success: true, message: "Product updated successfully", product });
 });
 
@@ -65,23 +37,69 @@ export const updateProduct = catchAsync(async (req: Request, res: Response) => {
  * @access  Private
  */
 export const deleteProduct = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-
-  const product = await Product.findByIdAndDelete(id);
-  if (!product) throw new AppError("Product not found", 404);
+  await productService.deleteProduct(req.params.id);
   res.json({ success: true, message: "Product deleted successfully" });
 });
 
 /**
  * @route   GET | /api/v1/products
- * @desc    Get all products
+ * @desc    Get all products / with filters
  * @access  Private
  */
 export const getAllProducts = catchAsync(
   async (req: Request, res: Response) => {
-    const products = await Product.find();
-    res.json({ success: true, products });
-  }
+    // prettier-ignore
+    const {search,category,sizes,colors,priceMin,priceMax,is_newArrival,is_feature,sort,page,limit } = req.query;
+
+    const colorArray = colors ? (colors as string).split(",") : [];
+    const sizeArray = sizes ? (sizes as string).split(",") : [];
+
+    // prettier-ignore
+    const newArrival = is_newArrival === "true" ? true : is_newArrival === "false" ? false : undefined;
+
+    // prettier-ignore
+    const feature = is_feature === "true" ? true : is_feature === "false" ? false : undefined;
+
+    const result = await productService.getProducts({
+      search: search as string,
+      category: category as string,
+      colors: colorArray,
+      sizes: sizeArray,
+      priceMin: priceMin ? Number(priceMin) : undefined,
+      priceMax: priceMax ? Number(priceMax) : undefined,
+      is_newArrival: newArrival,
+      is_feature: feature,
+      sort: sort as string,
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 12,
+    });
+
+    res.json({ success: true, result });
+  },
+);
+
+/**
+ * @route   GET | /api/v1/products/new-arrival
+ * @desc    Get all new arrival products
+ * @access  Private
+ */
+export const getNewArrivalProducts = catchAsync(
+  async (req: Request, res: Response) => {
+    const product = await productService.getArrivalProducts(true);
+    res.json({ success: true, product });
+  },
+);
+
+/**
+ * @route   GET | /api/v1/products/feature
+ * @desc    Get all featured products
+ * @access  Private
+ */
+export const getFeaturedProducts = catchAsync(
+  async (req: Request, res: Response) => {
+    const product = await productService.getFeaturedProducts(true);
+    res.json({ success: true, product });
+  },
 );
 
 /**
@@ -90,8 +108,6 @@ export const getAllProducts = catchAsync(
  * @access  Private
  */
 export const getProduct = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const product = await Product.findById(id);
-  if (!product) throw new AppError("Product not found", 404);
+  const product = await productService.getProductById(req.params.id);
   res.json({ success: true, product });
 });

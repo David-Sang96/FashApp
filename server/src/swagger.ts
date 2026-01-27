@@ -1,4 +1,5 @@
 import { authSwaggerDocs } from "./docs/auth.docs";
+import { productSwaggerDocs } from "./docs/product.docs";
 import { userSwaggerDocs } from "./docs/user.docs";
 
 const swaggerDefinition = {
@@ -13,6 +14,7 @@ const swaggerDefinition = {
   paths: {
     ...authSwaggerDocs,
     ...userSwaggerDocs,
+    ...productSwaggerDocs,
   },
 };
 

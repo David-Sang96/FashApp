@@ -1,3 +1,4 @@
+// Defines DB document shape.
 import { Document, Types } from "mongoose";
 
 export interface Image {

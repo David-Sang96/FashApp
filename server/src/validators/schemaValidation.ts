@@ -50,7 +50,7 @@ export const validationMessage = {
   SIZES_REQUIRED_MESSAGE: "Sizes is required",
   COLORS_MESSAGE: "At least one color must be provided",
   COLORS_REQUIRED_MESSAGE: "Colors is required",
-  IMAGES_MESSAGE: "At least one image must be provided",
+  IMAGES_MESSAGE: "Images must be an array with at least 1 object",
   IMAGES_REQUIRED_MESSAGE: "Images is required",
   NEWARRIVAL_REQUIRED_MESSAGE: "NewArrival is required",
   FEATURE_REQUIRED_MESSAGE: "Feature is required",

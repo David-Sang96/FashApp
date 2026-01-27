@@ -1,14 +1,14 @@
 import { body, param } from "express-validator";
-import { Types } from "mongoose";
 import { validation, validationMessage } from "./schemaValidation";
 
 export const userIDValidator = [
-  param("id").custom((value) => {
-    if (!Types.ObjectId.isValid(value)) {
-      throw new Error("Invalid user ID");
-    }
-    return true;
-  }),
+  // param("id").custom((value) => {
+  //   if (!Types.ObjectId.isValid(value)) {
+  //     throw new Error("Invalid user ID");
+  //   }
+  //   return true;
+  // }),
+  param("id").isMongoId().withMessage("Invalid product ID"),
 ];
 
 export const updateUserValidator = [

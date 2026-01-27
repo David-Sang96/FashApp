@@ -1,6 +1,8 @@
 import { body, param } from "express-validator";
-import { Types } from "mongoose";
 import { validation, validationMessage } from "./schemaValidation";
+
+const isArrayOfStrings = (arr: any[]) =>
+  Array.isArray(arr) && arr.every((item) => typeof item === "string");
 
 export const createProductValidator = [
   body("name")
@@ -20,6 +22,7 @@ export const createProductValidator = [
   body("price")
     .notEmpty()
     .withMessage(validationMessage.PRICE_REQUIRED_MESSAGE)
+    .bail()
     .isFloat({ gt: validation.PRICE_MIN - 1 }) // gt: 0
     .withMessage(validationMessage.PRICE_MIN_MESSAGE)
     .custom((value) => validation.PRICE_REGEX.test(value.toString()))
@@ -43,7 +46,7 @@ export const createProductValidator = [
     .isArray({ min: 1 })
     .withMessage(validationMessage.SIZES_MESSAGE)
     .bail()
-    .custom((arr) => arr.every((item: any) => typeof item === "string"))
+    .custom(isArrayOfStrings)
     .withMessage("Each size must be a string"),
 
   // colors must be an array of strings with at least one item
@@ -51,35 +54,50 @@ export const createProductValidator = [
     .isArray({ min: 1 })
     .withMessage(validationMessage.COLORS_MESSAGE)
     .bail()
-    .custom((arr) => arr.every((item: any) => typeof item === "string"))
+    .custom(isArrayOfStrings)
     .withMessage("Each color must be a string"),
 
   body("images")
     .isArray({ min: 1 })
     .withMessage(validationMessage.IMAGES_MESSAGE),
 
-  body("images.*.url")
-    .exists({ checkFalsy: true }) // ensures the field exists and is not empty
-    .withMessage("Each image must have a URL")
-    .isString()
-    .withMessage("Image URL must be a string")
-    .isURL()
-    .withMessage("Image URL must be a valid URL"),
+  body("images.*").custom((image) => {
+    // 1. Must be an object
+    if (typeof image !== "object" || Array.isArray(image) || image === null) {
+      throw new Error("Each image must be an object");
+    }
 
-  body("images.*.public_alt")
-    .exists({ checkFalsy: true })
-    .withMessage("Each image must have public_alt")
-    .isString()
-    .withMessage("public_alt must be a string "),
+    // 2. Must contain exactly these 2 keys
+    const allowedKeys = ["image_url", "public_id"];
+    const keys = Object.keys(image);
+
+    if (
+      keys.length !== allowedKeys.length ||
+      !allowedKeys.every((k) => keys.includes(k))
+    ) {
+      throw new Error(
+        "Each image object must contain exactly 'image_url' and 'public_id'",
+      );
+    }
+
+    // 3. Both keys must be strings
+    if (
+      typeof image.image_url !== "string" ||
+      typeof image.public_id !== "string"
+    ) {
+      throw new Error("'image_url' and 'public_id' must be strings");
+    }
+    return true;
+  }),
 
   body("is_newArrival")
-    .notEmpty()
+    .exists()
     .withMessage(validationMessage.NEWARRIVAL_REQUIRED_MESSAGE)
     .isBoolean()
     .withMessage(validationMessage.NEWARRIVAL_REQUIRED_MESSAGE),
 
   body("is_feature")
-    .notEmpty()
+    .exists()
     .withMessage(validationMessage.FEATURE_REQUIRED_MESSAGE)
     .isBoolean()
     .withMessage(validationMessage.FEATURE_REQUIRED_MESSAGE),
@@ -176,10 +194,11 @@ export const updateProductValidator = [
 ];
 
 export const productIDValidator = [
-  param("id").custom((value) => {
-    if (!Types.ObjectId.isValid(value)) {
-      throw new Error("Invalid product ID");
-    }
-    return true;
-  }),
+  param("id").isMongoId().withMessage("Invalid product ID"),
+  // param("id").custom((value) => {
+  //   if (!Types.ObjectId.isValid(value)) {
+  //     throw new Error("Invalid product ID");
+  //   }
+  //   return true;
+  // }),
 ];

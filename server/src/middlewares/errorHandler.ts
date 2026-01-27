@@ -15,8 +15,14 @@ export const errorHandler = (
 
   // Mongoose validation error
   if (err instanceof mongoose.Error.ValidationError) {
-    const errors = Object.values(err.errors).map((el: any) => el.message);
-    message = errors.join(", ");
+    // Extract all messages
+    const messages = Object.values(err.errors).map((el: any) => el.message);
+
+    // Deduplicate identical messages
+    const uniqueMessages = Array.from(new Set(messages));
+
+    // Join for response
+    message = uniqueMessages.join(", ");
     statusCode = 400;
   }
 
