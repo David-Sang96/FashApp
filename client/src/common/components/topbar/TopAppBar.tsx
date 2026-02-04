@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,13 +12,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useLogoutMutation } from "@/store/api/authApi";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FcSettings } from "react-icons/fc";
 import { FiLogOut } from "react-icons/fi";
-import { Link, useMatch, useNavigate } from "react-router";
+import { Link, useMatch, useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import CartSheet from "./CartSheet";
 import { ModeToggler } from "./ModeToggler";
@@ -26,10 +28,29 @@ const TopAppBar = () => {
   const [logoutMutation] = useLogoutMutation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchText, setSearchText] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchText, setSearchText] = useState(
+    searchParams.get("search") || "",
+  );
+  const debouncedSearch = useDebounce(searchText, 500);
   const navigate = useNavigate();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const productsPage = useMatch("/products");
+
+  useEffect(() => {
+    const urlSearch = searchParams.get("search") || "";
+    setSearchText((prev) => (prev !== urlSearch ? urlSearch : prev));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (debouncedSearch) {
+      params.set("search", debouncedSearch);
+    } else {
+      params.delete("search");
+    }
+    setSearchParams(params, { replace: true });
+  }, [debouncedSearch]);
 
   // Close search when clicking outside
   useEffect(() => {
@@ -60,7 +81,7 @@ const TopAppBar = () => {
   };
 
   return (
-    <section className="bg-primary sticky top-0 z-50 border-b px-4 py-3 text-white backdrop-blur md:px-5">
+    <section className="bg-primary sticky top-0 z-50 border-b px-4 py-3 text-white backdrop-blur md:px-5 lg:py-4">
       <div className="grid grid-cols-[auto_1fr_auto] items-center">
         {/* LEFT */}
         <div className="flex items-center gap-2">
@@ -78,7 +99,7 @@ const TopAppBar = () => {
             <span className="sr-only">Toggle menu</span>
           </Button>
 
-          <Link to="/" className="hidden items-center md:flex">
+          <Link to="/" className="hidden items-center lg:flex">
             <span className="font-serif text-2xl tracking-tight italic">
               FASH
             </span>
@@ -103,7 +124,9 @@ const TopAppBar = () => {
                 hover: {},
               }}
             >
-              <Link to={link.path}>{link.name}</Link>
+              <Link to={link.path} className="text-[15px]">
+                {link.name}
+              </Link>
               <motion.span
                 className="absolute bottom-0 left-0 h-0.5 bg-white"
                 variants={{
@@ -124,7 +147,7 @@ const TopAppBar = () => {
               {!searchOpen && (
                 <button
                   onClick={() => setSearchOpen(true)}
-                  className="flex h-8 w-8 items-center justify-center"
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center"
                 >
                   <Search className="size-5" />
                 </button>
@@ -149,7 +172,7 @@ const TopAppBar = () => {
                         setSearchOpen(false);
                         setSearchText("");
                       }}
-                      className="absolute top-1/2 right-2 -translate-y-1/2"
+                      className="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer"
                     >
                       <X className="size-4 text-black dark:text-white" />
                       <span className="sr-only">Close search</span>

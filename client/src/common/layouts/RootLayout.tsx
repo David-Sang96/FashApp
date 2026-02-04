@@ -1,13 +1,17 @@
 import { Toaster } from "@/components/ui/sonner";
+import { Suspense } from "react";
 import { Outlet, ScrollRestoration } from "react-router";
 import Footer from "../components/Footer";
+import PageSkeleton from "./PageSkeleton";
 
 const RootLayout = () => {
   return (
     <main className="flex flex-col">
       <ScrollRestoration />
       <section className="flex-1 pb-8">
-        <Outlet />
+        <Suspense fallback={<PageSkeleton />}>
+          <Outlet />
+        </Suspense>
       </section>
       <Footer />
       <Toaster

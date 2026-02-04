@@ -10,10 +10,13 @@ import {
   useGetProductsQuery,
 } from "@/store/api/productApi";
 import { SlidersHorizontal } from "lucide-react";
+import { useSearchParams } from "react-router";
 import { ProductGrid } from "../components/ProductGrid";
 
 export default function ProductsPage() {
   const { data: meta } = useGetProductsMetaQuery();
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get("search") || "";
   const defaultPriceRange: [number, number] | null = meta
     ? [meta.minPrice, meta.maxPrice]
     : null;
@@ -21,6 +24,8 @@ export default function ProductsPage() {
   const {
     selectedCategories,
     setSelectedCategories,
+    selectedSizes,
+    setSelectedSizes,
     selectedColors,
     setSelectedColors,
     priceRange,
@@ -33,10 +38,12 @@ export default function ProductsPage() {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const { data, isLoading, isError } = useGetProductsQuery({
     category: selectedCategories[0],
+    sizes: selectedSizes,
     colors: selectedColors,
     priceMin: priceRange?.[0] ?? 0,
     priceMax: priceRange?.[1] ?? 100,
-    sort: sortBy,
+    search: searchQuery,
+    sort: sortBy || "default",
     page: 1,
     limit: 12,
   });
@@ -45,6 +52,7 @@ export default function ProductsPage() {
 
   const activeFilterCount =
     selectedCategories.length +
+    selectedSizes.length +
     selectedColors.length +
     (priceRange &&
     (priceRange[0] > meta.minPrice || priceRange[1] < meta.maxPrice)
@@ -72,6 +80,8 @@ export default function ProductsPage() {
               <FilterSidebar
                 selectedCategories={selectedCategories}
                 setSelectedCategories={setSelectedCategories}
+                selectedSizes={selectedSizes}
+                setSelectedSizes={setSelectedSizes}
                 selectedColors={selectedColors}
                 setSelectedColors={setSelectedColors}
                 priceRange={priceRange}
@@ -91,6 +101,8 @@ export default function ProductsPage() {
             <FilterSidebar
               selectedCategories={selectedCategories}
               setSelectedCategories={setSelectedCategories}
+              selectedSizes={selectedSizes}
+              setSelectedSizes={setSelectedSizes}
               selectedColors={selectedColors}
               setSelectedColors={setSelectedColors}
               priceRange={priceRange}

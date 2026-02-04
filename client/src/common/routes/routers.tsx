@@ -1,19 +1,37 @@
-import ForgetPasswordPage from "@/features/auth/ForgetPasswordPage";
-import LoginPage from "@/features/auth/login/LoginPage";
-import RegisterPage from "@/features/auth/register/RegisterPage";
-import ResetPasswordPage from "@/features/auth/ResetPasswordPage";
-import VerifyEmailPage from "@/features/auth/VerifyEmailPage";
-import HomePage from "@/features/home/pages/HomePage";
-import ProductDetailPage from "@/features/products/pages/ProductDetailPage";
-import ProductsPage from "@/features/products/pages/ProductsPage";
-import ProfileHomePage from "@/features/profile/pages/ProfileHomePage";
+import { lazy } from "react";
 import { createBrowserRouter } from "react-router";
-import NotFound from "../components/NotFound";
 import AppLayout from "../layouts/AppLayout";
 import AuthLayout from "../layouts/AuthLayout";
 import RootLayout from "../layouts/RootLayout";
 import AuthRoute from "./AuthRoute";
 import ProtectedRoute from "./ProtectRoute";
+
+// Authentication
+const LoginPage = lazy(() => import("@/features/auth/login/LoginPage"));
+const RegisterPage = lazy(
+  () => import("@/features/auth/register/RegisterPage"),
+);
+const ForgetPasswordPage = lazy(
+  () => import("@/features/auth/ForgetPasswordPage"),
+);
+const ResetPasswordPage = lazy(
+  () => import("@/features/auth/ResetPasswordPage"),
+);
+const VerifyEmailPage = lazy(() => import("@/features/auth/VerifyEmailPage"));
+const ProfileHomePage = lazy(
+  () => import("@/features/profile/pages/ProfileHomePage"),
+);
+
+// Normal
+const HomePage = lazy(() => import("@/features/home/pages/HomePage"));
+const ProductsPage = lazy(
+  () => import("@/features/products/pages/ProductsPage"),
+);
+const ProductDetailPage = lazy(
+  () => import("@/features/products/pages/ProductDetailPage"),
+);
+
+const NotFound = lazy(() => import("../components/NotFound"));
 
 const router = createBrowserRouter([
   {

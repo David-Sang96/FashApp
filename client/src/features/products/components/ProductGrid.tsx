@@ -24,12 +24,14 @@ export function ProductGrid({ products, sortBy, setSortBy }: ProductGridProps) {
           {products.length} {products.length === 1 ? "product" : "products"}
         </p>
         <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] rounded-full">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="featured">default</SelectItem>
+          <SelectContent className="rounded-xl">
+            <SelectItem value="default">default</SelectItem>
             <SelectItem value="newest">Newest</SelectItem>
+            <SelectItem value="featured">Featured</SelectItem>
+            <SelectItem value="new_arrivals">New Arrival</SelectItem>
             <SelectItem value="price_asc">Price: Low to High</SelectItem>
             <SelectItem value="price_desc">Price: High to Low</SelectItem>
           </SelectContent>

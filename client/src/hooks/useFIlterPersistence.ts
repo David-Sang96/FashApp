@@ -1,91 +1,111 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+import {
+  parseAsArrayOf,
+  parseAsFloat,
+  parseAsString,
+  useQueryStates,
+} from "nuqs";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router";
 
 const STORAGE_KEY = "productFilters";
 
 export function useFilterPersistence(
   defaultPriceRange: [number, number] | null,
 ) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
-  const [sortBy, setSortBy] = useState("featured");
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize from URL params and localStorage on mount
-  useEffect(() => {
-    if (!defaultPriceRange) return;
-    const categories =
-      searchParams.get("categories")?.split(",").filter(Boolean) || [];
-    const colors = searchParams.get("colors")?.split(",").filter(Boolean) || [];
-    const priceMin = searchParams.get("priceMin")
-      ? parseFloat(searchParams.get("priceMin")!)
-      : defaultPriceRange[0];
-    const priceMax = searchParams.get("priceMax")
-      ? parseFloat(searchParams.get("priceMax")!)
-      : defaultPriceRange[1];
-    const sort = searchParams.get("sort") || "featured";
+  const [filters, setFilters] = useQueryStates(
+    {
+      categories: parseAsArrayOf(parseAsString).withDefault([]),
+      sizes: parseAsArrayOf(parseAsString).withDefault([]),
+      colors: parseAsArrayOf(parseAsString).withDefault([]),
+      priceMin: parseAsFloat.withDefault(defaultPriceRange?.[0] ?? 0),
+      priceMax: parseAsFloat.withDefault(defaultPriceRange?.[1] ?? 100),
+      sort: parseAsString.withDefault("default"),
+    },
+    {
+      history: "replace",
+      clearOnDefault: false, // ← Important: don't clear params when they match defaults
+    },
+  );
 
-    setSelectedCategories(categories);
-    setSelectedColors(colors);
-    setPriceRange([priceMin, priceMax]);
-    setSortBy(sort);
+  // Initialize from localStorage ONLY if URL has no params
+  useEffect(() => {
+    if (!defaultPriceRange || isInitialized) return;
+
+    // Check if URL actually has filter params
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasUrlFilters =
+      urlParams.has("categories") ||
+      urlParams.has("sizes") ||
+      urlParams.has("colors") ||
+      urlParams.has("priceMin") ||
+      urlParams.has("priceMax") ||
+      urlParams.has("sort");
+
+    if (!hasUrlFilters) {
+      // No URL params - restore from localStorage
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setFilters({
+            categories: parsed.categories || [],
+            sizes: parsed.sizes || [],
+            colors: parsed.colors || [],
+            priceMin: parsed.priceMin ?? defaultPriceRange[0],
+            priceMax: parsed.priceMax ?? defaultPriceRange[1],
+            sort: parsed.sort || "default",
+          });
+        } catch (e) {
+          console.error("Failed to restore filters:", e);
+        }
+      }
+    }
+
     setIsInitialized(true);
   }, [defaultPriceRange?.[0], defaultPriceRange?.[1]]);
 
-  // Persist to URL params whenever filters change
+  // Save to localStorage whenever filters change
   useEffect(() => {
-    if (!isInitialized || !priceRange) return;
+    if (!isInitialized) return;
 
-    const params = new URLSearchParams();
-    if (selectedCategories.length)
-      params.set("categories", selectedCategories.join(","));
-    if (selectedColors.length) params.set("colors", selectedColors.join(","));
-    params.set("priceMin", priceRange[0].toFixed(2));
-    params.set("priceMax", priceRange[1].toFixed(2));
-    if (sortBy !== "featured") params.set("sort", sortBy);
-
-    setSearchParams(params);
-
-    // Also save to localStorage as backup
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
-        selectedCategories,
-        selectedColors,
-        priceRange,
-        sortBy,
+        categories: filters.categories,
+        sizes: filters.sizes,
+        colors: filters.colors,
+        priceMin: filters.priceMin,
+        priceMax: filters.priceMax,
+        sort: filters.sort,
       }),
     );
-  }, [
-    selectedCategories,
-    selectedColors,
-    priceRange,
-    sortBy,
-    isInitialized,
-    setSearchParams,
-  ]);
+  }, [filters, isInitialized]);
 
   const clearFilters = () => {
-    setSelectedCategories([]);
-    setSelectedColors([]);
-    setPriceRange(defaultPriceRange);
-    setSortBy("featured");
-    setSearchParams(new URLSearchParams());
+    setFilters({
+      categories: [],
+      sizes: [],
+      colors: [],
+      priceMin: defaultPriceRange?.[0] ?? 0,
+      priceMax: defaultPriceRange?.[1] ?? 100,
+      sort: "default",
+    });
     localStorage.removeItem(STORAGE_KEY);
   };
 
   return {
-    selectedCategories,
-    setSelectedCategories,
-    selectedColors,
-    setSelectedColors,
-    priceRange,
-    setPriceRange,
-    sortBy,
-    setSortBy,
+    selectedCategories: filters.categories,
+    setSelectedCategories: (val: string[]) => setFilters({ categories: val }),
+    selectedSizes: filters.sizes,
+    setSelectedSizes: (val: string[]) => setFilters({ sizes: val }),
+    selectedColors: filters.colors,
+    setSelectedColors: (val: string[]) => setFilters({ colors: val }),
+    priceRange: [filters.priceMin, filters.priceMax] as [number, number],
+    setPriceRange: ([min, max]: [number, number]) =>
+      setFilters({ priceMin: min, priceMax: max }),
+    sortBy: filters.sort,
+    setSortBy: (val: string) => setFilters({ sort: val }),
     clearFilters,
     isInitialized,
   };

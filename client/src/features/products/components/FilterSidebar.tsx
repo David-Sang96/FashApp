@@ -11,6 +11,8 @@ import { GrFormCheckmark } from "react-icons/gr";
 interface FilterSidebarProps {
   selectedCategories: string[];
   setSelectedCategories: (categories: string[]) => void;
+  selectedSizes: string[];
+  setSelectedSizes: (sizes: string[]) => void;
   selectedColors: string[];
   setSelectedColors: (colors: string[]) => void;
   priceRange: [number, number] | null;
@@ -24,6 +26,8 @@ interface FilterSidebarProps {
 export function FilterSidebar({
   selectedCategories,
   setSelectedCategories,
+  selectedSizes,
+  setSelectedSizes,
   selectedColors,
   setSelectedColors,
   priceRange,
@@ -35,6 +39,7 @@ export function FilterSidebar({
   const { data, isLoading, isError } = useGetProductsMetaQuery();
   const [expandedSections, setExpandedSections] = useState({
     categories: true,
+    sizes: true,
     colors: true,
     price: true,
   });
@@ -50,6 +55,11 @@ export function FilterSidebar({
       filtered = filtered.filter((p) =>
         selectedCategories.includes(p.category),
       );
+    }
+
+    // Filter by selected size
+    if (selectedSizes.length > 0) {
+      filtered = filtered.filter((p) => selectedSizes.includes(p.sizes[0]));
     }
 
     // Filter by price range
@@ -92,6 +102,14 @@ export function FilterSidebar({
     setSelectedCategories(newCategories);
   };
 
+  const toggleSize = (size: string) => {
+    const newSizes = selectedSizes.includes(size)
+      ? selectedSizes.filter((c) => c !== size)
+      : [...selectedSizes, size];
+
+    setSelectedSizes(newSizes);
+  };
+
   const toggleColor = (color: string) => {
     const newColors = selectedColors.includes(color)
       ? selectedColors.filter((c) => c !== color)
@@ -112,6 +130,7 @@ export function FilterSidebar({
 
   const hasActiveFilters =
     selectedCategories.length > 0 ||
+    selectedSizes.length > 0 ||
     selectedColors.length > 0 ||
     priceRange[0] > data.minPrice ||
     priceRange[1] < data.maxPrice;
@@ -133,7 +152,7 @@ export function FilterSidebar({
             variant="ghost"
             size="sm"
             onClick={onClearFilters}
-            className="text-muted-foreground hover:text-foreground text-sm"
+            className="text-muted-foreground hover:text-foreground cursor-pointer text-sm"
           >
             Clear all
           </Button>
@@ -167,6 +186,40 @@ export function FilterSidebar({
                 />
                 <span className="text-muted-foreground group-hover:text-foreground flex-1 text-sm transition-colors">
                   {category}
+                </span>
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Sizes */}
+      <div className="border-border mb-4 border-b pb-4">
+        <button
+          onClick={() => toggleSection("sizes")}
+          className="mb-3 flex w-full items-center justify-between text-left"
+        >
+          <span className="text-sm font-medium">Sizes</span>
+          {expandedSections.sizes ? (
+            <ChevronUp className="size-5" />
+          ) : (
+            <ChevronDown className="size-5" />
+          )}
+        </button>
+        {expandedSections.sizes && (
+          <div className="flex flex-col gap-3">
+            {data.sizes.map((size) => (
+              <label
+                key={size}
+                className="group flex cursor-pointer items-center gap-3"
+              >
+                <Checkbox
+                  checked={selectedSizes.includes(size)}
+                  onCheckedChange={() => toggleSize(size)}
+                  className="h-4 w-4 rounded border border-gray-300 bg-white checked:border-blue-600 checked:bg-blue-600"
+                />
+                <span className="text-muted-foreground group-hover:text-foreground flex-1 text-sm transition-colors">
+                  {size}
                 </span>
               </label>
             ))}

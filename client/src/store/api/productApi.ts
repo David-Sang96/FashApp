@@ -15,7 +15,6 @@ export const productApiSlice = apiSlice.injectEndpoints({
     getProducts: builder.query<GetProductsResponse, GetProductsParams>({
       query: (params) => {
         const query = new URLSearchParams();
-        console.log("api", params.sort);
         if (params.category) query.append("category", params.category);
         if (params.colors?.length)
           query.append("colors", params.colors.join(","));
