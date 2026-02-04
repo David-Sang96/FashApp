@@ -1,8 +1,13 @@
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import express, { json, urlencoded } from "express";
-import rateLimit from "express-rate-limit";
+import express, {
+  json,
+  NextFunction,
+  Request,
+  Response,
+  urlencoded,
+} from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
@@ -33,12 +38,9 @@ const corsOptions = {
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS", "PUT"],
 };
 
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100, // Limit each IP to 100 requests per 15 mins
-  message: "Too many requests from this IP, please try again after 15 minutes",
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.setHeader("Cross-Origin-Resource-Policy", "same-site");
+  next();
 });
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -58,7 +60,7 @@ app
   .use(urlencoded({ extended: true }));
 
 // 3. Rate Limiting & Routes (The Logic)
-app.use("/api/v1", apiLimiter, routes); // The "Bouncer" and the "VIP Section"
+app.use("/api/v1", routes); // The "Bouncer" and the "VIP Section"
 
 // 4. The Safety Net (The Final Destination)
 app.use(errorHandler);

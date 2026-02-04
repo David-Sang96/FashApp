@@ -36,4 +36,11 @@ export class ProductRepository {
     }
     return Product.findOne({ email }).exec();
   }
+
+  async findByMeta(value: string) {
+    if (value.includes("colors")) {
+      return Product.distinct(`colors.${value}`);
+    }
+    return Product.distinct(value);
+  }
 }

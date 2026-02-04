@@ -6,7 +6,7 @@ const isProd = ENV_VARS.NODE_ENV === "production";
 export const setTokensCookies = (
   res: Response,
   accessToken: string,
-  refreshToken: string
+  refreshToken: string,
 ) => {
   res
     .cookie("accessToken", accessToken, {
@@ -21,6 +21,6 @@ export const setTokensCookies = (
       secure: isProd,
       maxAge: 30 * 24 * 60 * 60 * 1000,
       sameSite: isProd ? "none" : "lax",
-      path: "/api/v1/auth/refresh",
+      path: "/",
     });
 };

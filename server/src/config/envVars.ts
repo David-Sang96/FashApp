@@ -1,3 +1,6 @@
+import dotenvFlow from "dotenv-flow";
+dotenvFlow.config();
+
 export const ENV_VARS = {
   PORT: process.env.PORT,
   CLIENT_URL: process.env.CLIENT_URL,

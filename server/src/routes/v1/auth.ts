@@ -1,5 +1,7 @@
 import express from "express";
+
 import { protect } from "../../middlewares/protect.middleware";
+import { authLimiter } from "../../middlewares/rateLimitter.middleware";
 import { upload } from "../../middlewares/upload.middleware";
 import { validateRequest } from "../../middlewares/validateRequest.middlware";
 import {
@@ -40,8 +42,20 @@ router.get(
   verifyResetToken,
 );
 
-router.post("/register", registerUserValidator, validateRequest, registerUser);
-router.post("/login", loginUserValidator, validateRequest, loginUser);
+router.post(
+  "/register",
+  authLimiter,
+  registerUserValidator,
+  validateRequest,
+  registerUser,
+);
+router.post(
+  "/login",
+  authLimiter,
+  loginUserValidator,
+  validateRequest,
+  loginUser,
+);
 router.post("/logout", logoutUser);
 router.post("/refresh", refresh);
 router.post(

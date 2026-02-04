@@ -4,6 +4,20 @@ import { validation, validationMessage } from "./schemaValidation";
 const isArrayOfStrings = (arr: any[]) =>
   Array.isArray(arr) && arr.every((item) => typeof item === "string");
 
+const isArrayOfColorObjects = (colors: any[]) => {
+  if (!Array.isArray(colors) || colors.length === 0) return false;
+
+  return colors.every((color) => {
+    return (
+      typeof color === "object" &&
+      typeof color.name === "string" &&
+      color.name.trim().length > 0 &&
+      typeof color.hex === "string" &&
+      /^#([0-9A-Fa-f]{6})$/.test(color.hex)
+    );
+  });
+};
+
 export const createProductValidator = [
   body("name")
     .trim()
@@ -49,13 +63,37 @@ export const createProductValidator = [
     .custom(isArrayOfStrings)
     .withMessage("Each size must be a string"),
 
-  // colors must be an array of strings with at least one item
   body("colors")
     .isArray({ min: 1 })
-    .withMessage(validationMessage.COLORS_MESSAGE)
-    .bail()
-    .custom(isArrayOfStrings)
-    .withMessage("Each color must be a string"),
+    .withMessage(validationMessage.COLORS_MESSAGE),
+
+  // No extra fields, exact keys only
+  body("colors.*").custom((color) => {
+    if (typeof color !== "object" || color === null || Array.isArray(color)) {
+      throw new Error("Each color must be an object");
+    }
+
+    const allowedKeys = ["name", "hex"];
+    const keys = Object.keys(color);
+
+    if (
+      keys.length !== allowedKeys.length ||
+      !allowedKeys.every((k) => keys.includes(k))
+    ) {
+      throw new Error("Each color must contain exactly 'name' and 'hex'");
+    }
+
+    return true;
+  }),
+
+  body("colors.*.name")
+    .isString()
+    .notEmpty()
+    .withMessage("Color name is required"),
+
+  body("colors.*.hex")
+    .matches(/^#([0-9A-Fa-f]{6})$/)
+    .withMessage("Color hex must be a valid hex code"),
 
   body("images")
     .isArray({ min: 1 })
@@ -89,6 +127,16 @@ export const createProductValidator = [
     }
     return true;
   }),
+
+  body("images.*.image_url")
+    .isString()
+    .matches(/^https?:\/\/.+/)
+    .withMessage("image_url must be a valid URL"),
+
+  body("images.*.public_id")
+    .isString()
+    .notEmpty()
+    .withMessage("public_id is required"),
 
   body("is_newArrival")
     .exists()

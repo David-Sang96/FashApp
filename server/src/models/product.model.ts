@@ -62,10 +62,22 @@ const productSchema = new Schema<IProduct>(
     },
 
     colors: {
-      type: [String],
+      type: [
+        {
+          name: {
+            type: String,
+            required: true,
+          },
+          hex: {
+            type: String,
+            required: true,
+            match: [/^#([0-9A-Fa-f]{6})$/, "Invalid hex color"],
+          },
+        },
+      ],
       required: [true, validationMessage.COLORS_REQUIRED_MESSAGE],
       validate: {
-        validator: (val: string[]) => Array.isArray(val) && val.length > 0,
+        validator: (val: any[]) => Array.isArray(val) && val.length > 0,
         message: validationMessage.COLORS_MESSAGE,
       },
     },

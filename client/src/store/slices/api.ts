@@ -14,8 +14,11 @@ export const baseUrl =
 
 const baseQuery = fetchBaseQuery({
   baseUrl,
-  credentials: "include", // REQUIRED FOR COOKIES
+  credentials: "include",
 });
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let refreshPromise: Promise<any> | null = null;
 
 const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs, // args
@@ -36,12 +39,15 @@ const baseQueryWithReauth: BaseQueryFn<
 
   // access token expired
   if (result.error?.status === 401 && !isRefreshCall) {
-    // try refresh
-    const refreshResult = await baseQuery(
-      { url: "/auth/refresh", method: "POST" },
-      api,
-      extraOptions,
-    );
+    //  create or reuse refresh promise
+    if (!refreshPromise) {
+      refreshPromise = Promise.resolve(
+        baseQuery({ url: "/auth/refresh", method: "POST" }, api, extraOptions),
+      );
+    }
+
+    const refreshResult = await refreshPromise;
+    refreshPromise = null;
 
     if (!refreshResult.error) {
       //Frontend still knows nothing but cookies are updated automatically so retry original request

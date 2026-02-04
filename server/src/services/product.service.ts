@@ -38,7 +38,9 @@ export class ProductService {
     if (search) filter.name = { $regex: search, $options: "i" }; // text search
     if (category) filter.category = category;
     if (colors?.length)
-      filter.colors = { $in: colors.map((c) => new RegExp(`^${c}$`, "i")) }; //case-insensitive matching
+      filter["colors.name"] = {
+        $in: colors.map((c) => new RegExp(`^${c}$`, "i")),
+      }; //case-insensitive matching
     if (sizes?.length)
       filter.sizes = { $in: sizes.map((c) => new RegExp(`^${c}$`, "i")) };
     if (priceMin !== undefined || priceMax !== undefined) {
@@ -55,8 +57,8 @@ export class ProductService {
     else if (sort === "price_desc") sortOption.price = -1;
     else if (sort === "rating_asc") sortOption.rating_count = 1;
     else if (sort === "rating_desc") sortOption.rating_count = -1;
-    else if (sort === "latest") sortOption.createdAt = -1;
-    else sortOption.createdAt = -1;
+    else if (sort === "newest") sortOption.createdAt = -1;
+    else sortOption.createdAt = 1;
 
     const skip = (page - 1) * limit;
 
@@ -101,6 +103,14 @@ export class ProductService {
     const products = await this.repo.findAll(undefined, is_feature);
     if (!products) {
       throw new AppError("Featured Products not found", 404);
+    }
+    return products;
+  }
+
+  async getProductsMetaData(value: string) {
+    const products = await this.repo.findByMeta(value);
+    if (!products) {
+      throw new AppError("Meta Products not found", 404);
     }
     return products;
   }

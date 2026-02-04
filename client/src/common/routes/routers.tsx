@@ -4,7 +4,8 @@ import RegisterPage from "@/features/auth/register/RegisterPage";
 import ResetPasswordPage from "@/features/auth/ResetPasswordPage";
 import VerifyEmailPage from "@/features/auth/VerifyEmailPage";
 import HomePage from "@/features/home/pages/HomePage";
-import ProductDetailPage from "@/features/product-detail/pages/ProductDetailPage";
+import ProductDetailPage from "@/features/products/pages/ProductDetailPage";
+import ProductsPage from "@/features/products/pages/ProductsPage";
 import ProfileHomePage from "@/features/profile/pages/ProfileHomePage";
 import { createBrowserRouter } from "react-router";
 import NotFound from "../components/NotFound";
@@ -35,6 +36,14 @@ const router = createBrowserRouter([
             element: (
               <ProtectedRoute>
                 <ProfileHomePage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "/products",
+            element: (
+              <ProtectedRoute>
+                <ProductsPage />
               </ProtectedRoute>
             ),
           },
@@ -93,9 +102,9 @@ const router = createBrowserRouter([
           },
         ],
       },
-      { path: "*", element: <NotFound /> },
     ],
   },
+  { path: "*", element: <NotFound /> },
 ]);
 
 export default router;

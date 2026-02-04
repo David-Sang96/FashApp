@@ -6,6 +6,11 @@ export interface Image {
   public_id: string;
 }
 
+export interface Color {
+  name: string;
+  hex: string;
+}
+
 export interface IProduct extends Document {
   name: string;
   description: string;
@@ -13,7 +18,7 @@ export interface IProduct extends Document {
   instock_count: number;
   category: string;
   sizes: string[];
-  colors: string[];
+  colors: Color[];
   images: Image[];
   is_newArrival: boolean;
   is_feature: boolean;

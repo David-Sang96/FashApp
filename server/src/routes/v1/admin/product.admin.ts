@@ -1,4 +1,5 @@
 import express from "express";
+
 import {
   createProduct,
   deleteProduct,
@@ -6,9 +7,14 @@ import {
   getFeaturedProducts,
   getNewArrivalProducts,
   getProduct,
+  getProductsMeta,
   updateProduct,
 } from "../../../controllers/admin/product.admin.controller";
 import { isAdmin } from "../../../middlewares/auth.middleware";
+import {
+  adminLimiter,
+  publicLimiter,
+} from "../../../middlewares/rateLimitter.middleware";
 import { validateRequest } from "../../../middlewares/validateRequest.middlware";
 import {
   createProductValidator,
@@ -18,12 +24,21 @@ import {
 
 const router = express.Router();
 
-router.get("/", getAllProducts);
-router.get("/new-arrival", getNewArrivalProducts);
-router.get("/feature", getFeaturedProducts);
-router.get("/:id", productIDValidator, validateRequest, getProduct);
+router.get("/", publicLimiter, getAllProducts);
+router.get("/filters/meta", publicLimiter, getProductsMeta);
+router.get("/new-arrival", publicLimiter, getNewArrivalProducts);
+router.get("/feature", publicLimiter, getFeaturedProducts);
+router.get(
+  "/:id",
+  publicLimiter,
+  productIDValidator,
+  validateRequest,
+  getProduct,
+);
+
 router.post(
   "/",
+  adminLimiter,
   isAdmin,
   createProductValidator,
   validateRequest,
@@ -31,6 +46,7 @@ router.post(
 );
 router.put(
   "/:id",
+  adminLimiter,
   isAdmin,
   productIDValidator,
   updateProductValidator,
@@ -39,6 +55,7 @@ router.put(
 );
 router.delete(
   "/:id",
+  adminLimiter,
   isAdmin,
   productIDValidator,
   validateRequest,

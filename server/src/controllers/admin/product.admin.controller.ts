@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { CreateProductDTO, UpdateProductDTO } from "../../dtos/product.dto";
+import { Product } from "../../models/product.model";
 import { ProductService } from "../../services/product.service";
 import { AppError } from "../../utils/AppError";
 import { catchAsync } from "../../utils/catchAsync";
@@ -27,7 +28,10 @@ export const createProduct = catchAsync(async (req: Request, res: Response) => {
  */
 export const updateProduct = catchAsync(async (req: Request, res: Response) => {
   const data = req.body as UpdateProductDTO;
-  const product = await productService.updateProduct(req.params.id, data);
+  const product = await productService.updateProduct(
+    req.params.id as string,
+    data,
+  );
   res.json({ success: true, message: "Product updated successfully", product });
 });
 
@@ -37,7 +41,7 @@ export const updateProduct = catchAsync(async (req: Request, res: Response) => {
  * @access  Private
  */
 export const deleteProduct = catchAsync(async (req: Request, res: Response) => {
-  await productService.deleteProduct(req.params.id);
+  await productService.deleteProduct(req.params.id as string);
   res.json({ success: true, message: "Product deleted successfully" });
 });
 
@@ -85,8 +89,8 @@ export const getAllProducts = catchAsync(
  */
 export const getNewArrivalProducts = catchAsync(
   async (req: Request, res: Response) => {
-    const product = await productService.getArrivalProducts(true);
-    res.json({ success: true, product });
+    const products = await productService.getArrivalProducts(true);
+    res.json({ success: true, products });
   },
 );
 
@@ -97,8 +101,8 @@ export const getNewArrivalProducts = catchAsync(
  */
 export const getFeaturedProducts = catchAsync(
   async (req: Request, res: Response) => {
-    const product = await productService.getFeaturedProducts(true);
-    res.json({ success: true, product });
+    const products = await productService.getFeaturedProducts(true);
+    res.json({ success: true, products });
   },
 );
 
@@ -108,6 +112,62 @@ export const getFeaturedProducts = catchAsync(
  * @access  Private
  */
 export const getProduct = catchAsync(async (req: Request, res: Response) => {
-  const product = await productService.getProductById(req.params.id);
+  const product = await productService.getProductById(req.params.id as string);
   res.json({ success: true, product });
 });
+
+/**
+ * @route   GET | /api/v1/products/filters/meta
+ * @desc    Get products meta data
+ * @access  Private
+ */
+export const getProductsMeta = catchAsync(
+  async (req: Request, res: Response) => {
+    const sizes = await productService.getProductsMetaData("sizes");
+    const categories = await productService.getProductsMetaData("category");
+    const totalProductOfEachCategory = await Product.aggregate([
+      {
+        $group: {
+          _id: "$category",
+          total: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          category: "$_id",
+          total: 1,
+        },
+      },
+    ]);
+    const colors = await Product.aggregate([
+      { $unwind: "$colors" },
+      {
+        $group: {
+          _id: "$colors.name", // group by NAME only
+          hex: { $first: "$colors.hex" }, // take the first hex for this name
+        },
+      },
+      { $replaceRoot: { newRoot: { name: "$_id", hex: "$hex" } } },
+    ]);
+
+    const priceRange = await Product.aggregate([
+      {
+        $group: {
+          _id: null,
+          minPrice: { $min: "$price" },
+          maxPrice: { $max: "$price" },
+        },
+      },
+    ]);
+
+    res.json({
+      colors,
+      sizes,
+      categories,
+      totalProductOfEachCategory,
+      minPrice: priceRange[0]?.minPrice || 0,
+      maxPrice: priceRange[0]?.maxPrice || 0,
+    });
+  },
+);

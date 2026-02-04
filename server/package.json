@@ -8,7 +8,8 @@
     "dev": "cross-env NODE_ENV=development nodemon src/index.ts",
     "build": "tsc -p .",
     "start": "cross-env NODE_ENV=production node dist/index.js",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "seed": "cross-env NODE_ENV=development ts-node src/seed/runSeed.ts"
   },
   "keywords": [],
   "author": "",

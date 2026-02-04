@@ -22,7 +22,7 @@ const ProfileHomePage = () => {
   const { name, email, provider, role, avatarUrl } = data.user;
 
   return (
-    <section className="mx-auto max-w-7xl">
+    <section className="mx-auto max-w-7xl pt-4">
       <ProfileHeader name={name} email={email} avatarUrl={avatarUrl} />
       <UserInfoSection
         email={email}

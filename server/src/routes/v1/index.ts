@@ -19,7 +19,7 @@ router.get(
   "/auth/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
-  })
+  }),
 );
 
 // callback
@@ -35,13 +35,13 @@ router.get(
     if (!user) {
       // extra safety, usually handled by failureRedirect
       return res.redirect(
-        `${ENV_VARS.CLIENT_URL}/login?error=google_email_exists`
+        `${ENV_VARS.CLIENT_URL}/login?error=google_email_exists`,
       );
     }
 
     if (!user.active) {
       return res.redirect(
-        `${ENV_VARS.CLIENT_URL}/login?error=account_deactive`
+        `${ENV_VARS.CLIENT_URL}/login?error=account_deactive`,
       );
     }
 
@@ -49,7 +49,7 @@ router.get(
     setTokensCookies(res, accessToken, refreshToken);
 
     res.redirect(ENV_VARS.CLIENT_URL!);
-  }
+  },
 );
 
 export default router;

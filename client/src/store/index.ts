@@ -1,4 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
+import { setupListeners } from "@reduxjs/toolkit/query";
 import { apiSlice } from "./slices/api";
 import authReducer from "./slices/auth";
 
@@ -11,6 +12,8 @@ export const store = configureStore({
     GetDefaultMiddleware().concat(apiSlice.middleware),
   devTools: true,
 });
+
+setupListeners(store.dispatch);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

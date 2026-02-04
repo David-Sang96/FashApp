@@ -1,9 +1,6 @@
-//These are compile-time types for service layer input.
-export interface ImageDTO {
-  image_url: string;
-  public_id: string;
-}
+import { Color, Image } from "../types/productType";
 
+//These are compile-time types for service layer input.
 export interface CreateProductDTO {
   name: string;
   description: string;
@@ -11,8 +8,8 @@ export interface CreateProductDTO {
   instock_count: number;
   category: string;
   sizes: string[];
-  colors: string[];
-  images: ImageDTO[];
+  colors: Color[];
+  images: Image[];
   is_newArrival: boolean;
   is_feature: boolean;
   rating_count: number;

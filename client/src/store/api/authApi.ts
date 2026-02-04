@@ -49,6 +49,18 @@ export const authApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["User"],
     }),
 
+    /* 
+        Advantage of resetApiState()
+        Prevents stale data
+        Avoids auth bugs
+        Makes logout truly “clean”
+        Saves you from edge-case nightmares
+    
+        Most production apps do one of these on logout:
+       ✔ resetApiState()
+       ✔ full page reload
+       ✔ store rehydration reset
+      */
     logout: builder.mutation({
       query: () => ({
         url: "/auth/logout",

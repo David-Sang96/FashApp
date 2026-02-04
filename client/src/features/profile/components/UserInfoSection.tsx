@@ -57,9 +57,16 @@ const UserInfoSection = ({ name, email, provider, role }: UserInfoProps) => {
 
   const onSubmit = async (val: formInputs) => {
     try {
-      const { message } = await updateUserMutation(val).unwrap();
+      const { message, user } = await updateUserMutation(val).unwrap();
       toast.success(message);
       setIsEditing(false);
+
+      form.reset({
+        name: user.name,
+        email: user.email,
+        provider: user.provider,
+        role: user.role,
+      });
     } catch (err: any) {
       toast.error(err?.data?.message || "Update failed. Please try again.");
     }

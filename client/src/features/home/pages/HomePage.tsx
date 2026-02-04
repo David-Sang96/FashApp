@@ -1,13 +1,23 @@
-import BestDeatls from "../components/BestDeatls";
+import Featured from "../components/Featured";
 import NewArrivals from "../components/NewArrivals";
 
-const HomePage = () => {
+export default function HomePage() {
   return (
-    <section className="space-y-20 p-2">
-      <NewArrivals />
-      <BestDeatls />
-    </section>
-  );
-};
+    <div className="flex min-h-screen flex-col">
+      <section className="bg-muted relative py-16 md:py-24">
+        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+          <h1 className="mb-4 font-serif text-4xl tracking-tight text-balance italic md:text-5xl lg:text-6xl">
+            Welcome to a new dimension of home decor
+          </h1>
+          <p className="text-muted-foreground mx-auto max-w-2xl text-lg text-pretty">
+            Mush Studios blends intricate design, considered function and luxury
+            materials to transform your home and awaken your senses.
+          </p>
+        </div>
+      </section>
 
-export default HomePage;
+      <NewArrivals />
+      <Featured />
+    </div>
+  );
+}

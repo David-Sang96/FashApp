@@ -20,7 +20,7 @@ export const allUsers = catchAsync(async (req: Request, res: Response) => {
  * @access  Private
  */
 export const singleUser = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { id } = req.params as { id: string };
   const user = await UserService.getUser(id);
   if (!user) throw new AppError("User not found", 404);
   res.json({ success: true, user });

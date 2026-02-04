@@ -209,7 +209,7 @@ const NotFound = () => {
             >
               <Button
                 onClick={() => navigate(-1)}
-                className="cursor-pointer rounded-full"
+                className="cursor-pointer rounded-full text-black dark:text-white"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Go Back
