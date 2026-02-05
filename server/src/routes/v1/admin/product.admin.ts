@@ -7,6 +7,7 @@ import {
   getFeaturedProducts,
   getNewArrivalProducts,
   getProduct,
+  getProductsCursor,
   getProductsMeta,
   updateProduct,
 } from "../../../controllers/admin/product.admin.controller";
@@ -25,6 +26,7 @@ import {
 const router = express.Router();
 
 router.get("/", publicLimiter, getAllProducts);
+router.get("/cursor", publicLimiter, getProductsCursor);
 router.get("/filters/meta", publicLimiter, getProductsMeta);
 router.get("/new-arrival", publicLimiter, getNewArrivalProducts);
 router.get("/feature", publicLimiter, getFeaturedProducts);

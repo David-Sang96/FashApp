@@ -56,5 +56,13 @@ export interface GetProductsParams {
 
 export interface GetProductsResponse {
   success: boolean;
-  result: { products: Product[] };
+  result: {
+    products: Product[];
+    currentPage: number;
+    totalPages: number;
+    nextPage: boolean;
+    previousPage: boolean;
+    count: number;
+    total: number;
+  };
 }

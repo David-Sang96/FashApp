@@ -1,6 +1,3 @@
-import { useState } from "react";
-import { FilterSidebar } from "../components/FilterSidebar";
-
 import Loader from "@/common/components/Loader";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -9,8 +6,12 @@ import {
   useGetProductsMetaQuery,
   useGetProductsQuery,
 } from "@/store/api/productApi";
+
 import { SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
 import { useSearchParams } from "react-router";
+import { FilterSidebar } from "../components/FilterSidebar";
+import { Pagination } from "../components/Pagination";
 import { ProductGrid } from "../components/ProductGrid";
 
 export default function ProductsPage() {
@@ -32,6 +33,8 @@ export default function ProductsPage() {
     setPriceRange,
     sortBy,
     setSortBy,
+    page,
+    setPage,
     clearFilters,
   } = useFilterPersistence(defaultPriceRange);
 
@@ -44,7 +47,7 @@ export default function ProductsPage() {
     priceMax: priceRange?.[1] ?? 100,
     search: searchQuery,
     sort: sortBy || "default",
-    page: 1,
+    page,
     limit: 12,
   });
 
@@ -96,7 +99,6 @@ export default function ProductsPage() {
 
         {/* Desktop Layout */}
         <div className="flex gap-8">
-          {/* Desktop Sidebar */}
           <div className="hidden lg:block">
             <FilterSidebar
               selectedCategories={selectedCategories}
@@ -112,20 +114,32 @@ export default function ProductsPage() {
             />
           </div>
 
-          {/* Product Grid */}
-          {isLoading ? (
-            <Loader />
-          ) : isError || !data ? (
-            <div className="text-center text-gray-500">
-              Error loading products
+          <div className="flex flex-1 flex-col">
+            <div>
+              {isLoading ? (
+                <Loader />
+              ) : isError || !data ? (
+                <div className="text-center text-gray-500">
+                  Error loading products
+                </div>
+              ) : (
+                <ProductGrid
+                  products={data.result.products}
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                />
+              )}
             </div>
-          ) : (
-            <ProductGrid
-              products={data.result.products}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-            />
-          )}
+            <div className="mt-auto">
+              {data && (
+                <Pagination
+                  currentPage={data.result.currentPage}
+                  totalPages={data.result.totalPages}
+                  onPageChange={setPage}
+                />
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </main>

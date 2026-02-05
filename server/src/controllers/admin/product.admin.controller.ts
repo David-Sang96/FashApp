@@ -47,7 +47,7 @@ export const deleteProduct = catchAsync(async (req: Request, res: Response) => {
 
 /**
  * @route   GET | /api/v1/products
- * @desc    Get all products / with filters
+ * @desc    Get products using page pagination
  * @access  Private
  */
 export const getAllProducts = catchAsync(
@@ -61,8 +61,8 @@ export const getAllProducts = catchAsync(
     // prettier-ignore
     const newArrival = is_newArrival === "true" ? true : is_newArrival === "false" ? false : undefined;
 
-    // prettier-ignore
-    const feature = is_feature === "true" ? true : is_feature === "false" ? false : undefined;
+    const feature =
+      is_feature === "true" ? true : is_feature === "false" ? false : undefined;
 
     const result = await productService.getProducts({
       search: search as string,
@@ -169,5 +169,42 @@ export const getProductsMeta = catchAsync(
       minPrice: priceRange[0]?.minPrice || 0,
       maxPrice: priceRange[0]?.maxPrice || 0,
     });
+  },
+);
+
+/**
+ * @route   GET | /api/v1/products/cursor
+ * @desc    Get products using cursor pagination
+ * @access  Private
+ */
+export const getProductsCursor = catchAsync(
+  async (req: Request, res: Response) => {
+    // prettier-ignore
+    const {search,category,sizes,colors,priceMin,priceMax,is_newArrival,is_feature,sort,cursor,limit } = req.query;
+
+    const colorArray = colors ? (colors as string).split(",") : [];
+    const sizeArray = sizes ? (sizes as string).split(",") : [];
+
+    // prettier-ignore
+    const newArrival = is_newArrival === "true" ? true : is_newArrival === "false" ? false : undefined;
+
+    const feature =
+      is_feature === "true" ? true : is_feature === "false" ? false : undefined;
+
+    const result = await productService.getProductsCursor({
+      search: search as string,
+      category: category as string,
+      colors: colorArray,
+      sizes: sizeArray,
+      priceMin: priceMin ? Number(priceMin) : undefined,
+      priceMax: priceMax ? Number(priceMax) : undefined,
+      is_newArrival: newArrival,
+      is_feature: feature,
+      sort: sort as string,
+      cursor: cursor as string | undefined,
+      limit: limit ? Number(limit) : 12,
+    });
+
+    res.json({ success: true, result });
   },
 );
