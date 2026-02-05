@@ -16,20 +16,17 @@ export const productApiSlice = apiSlice.injectEndpoints({
       query: (params) => {
         const query = new URLSearchParams();
         if (params.category) query.append("category", params.category);
-        if (params.colors?.length)
-          query.append("colors", params.colors.join(","));
-        if (params.sizes?.length) query.append("sizes", params.sizes.join(","));
-        if (params.priceMin !== undefined)
-          query.append("priceMin", String(params.priceMin));
-        if (params.priceMax !== undefined)
-          query.append("priceMax", String(params.priceMax));
+        if (params.colors) query.append("colors", params.colors.join(","));
+        if (params.sizes) query.append("sizes", params.sizes.join(","));
+        if (params.priceMin) query.append("priceMin", String(params.priceMin));
+        if (params.priceMax) query.append("priceMax", String(params.priceMax));
         if (params.sort) query.append("sort", params.sort);
         if (params.page) query.append("page", String(params.page));
         if (params.limit) query.append("limit", String(params.limit));
         if (params.search) query.append("search", params.search);
-        if (params.is_newArrival !== undefined)
+        if (params.is_newArrival)
           query.append("is_newArrival", String(params.is_newArrival));
-        if (params.is_feature !== undefined)
+        if (params.is_feature)
           query.append("is_feature", String(params.is_feature));
 
         return `/products?${query.toString()}`;

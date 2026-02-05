@@ -36,7 +36,11 @@ export class ProductService {
     const filter: any = {};
 
     if (search) filter.name = { $regex: search, $options: "i" }; // text search
-    if (category) filter.category = category;
+    if (category?.length) {
+      filter.category = {
+        $in: category.map((c) => new RegExp(`^${c}$`, "i")),
+      };
+    }
     if (colors?.length)
       filter["colors.name"] = {
         $in: colors.map((c) => new RegExp(`^${c}$`, "i")),
@@ -85,12 +89,10 @@ export class ProductService {
     const totalPages = Math.ceil(total / limit);
     const hasPreviousPage = page > 1 ? true : false;
     const hasNextPage = page < totalPages ? true : false;
-    const count = products.length;
 
     return {
       products,
       total,
-      count,
       hasPreviousPage,
       hasNextPage,
       currentPage: page,

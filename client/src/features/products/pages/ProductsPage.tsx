@@ -40,7 +40,7 @@ export default function ProductsPage() {
 
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const { data, isLoading, isError } = useGetProductsQuery({
-    category: selectedCategories[0],
+    category: selectedCategories.join(","),
     sizes: selectedSizes,
     colors: selectedColors,
     priceMin: priceRange?.[0] ?? 0,

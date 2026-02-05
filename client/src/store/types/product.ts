@@ -62,7 +62,6 @@ export interface GetProductsResponse {
     totalPages: number;
     nextPage: boolean;
     previousPage: boolean;
-    count: number;
     total: number;
   };
 }

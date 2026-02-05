@@ -57,6 +57,7 @@ export const getAllProducts = catchAsync(
 
     const colorArray = colors ? (colors as string).split(",") : [];
     const sizeArray = sizes ? (sizes as string).split(",") : [];
+    const categoryArray = category ? (category as string).split(",") : [];
 
     // prettier-ignore
     const newArrival = is_newArrival === "true" ? true : is_newArrival === "false" ? false : undefined;
@@ -66,7 +67,7 @@ export const getAllProducts = catchAsync(
 
     const result = await productService.getProducts({
       search: search as string,
-      category: category as string,
+      category: categoryArray,
       colors: colorArray,
       sizes: sizeArray,
       priceMin: priceMin ? Number(priceMin) : undefined,
@@ -184,6 +185,7 @@ export const getProductsCursor = catchAsync(
 
     const colorArray = colors ? (colors as string).split(",") : [];
     const sizeArray = sizes ? (sizes as string).split(",") : [];
+    const categoryArray = sizes ? (sizes as string).split(",") : [];
 
     // prettier-ignore
     const newArrival = is_newArrival === "true" ? true : is_newArrival === "false" ? false : undefined;
@@ -193,7 +195,7 @@ export const getProductsCursor = catchAsync(
 
     const result = await productService.getProductsCursor({
       search: search as string,
-      category: category as string,
+      category: categoryArray,
       colors: colorArray,
       sizes: sizeArray,
       priceMin: priceMin ? Number(priceMin) : undefined,

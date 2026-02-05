@@ -32,7 +32,7 @@ const TopAppBar = () => {
   const [searchText, setSearchText] = useState(
     searchParams.get("search") || "",
   );
-  const debouncedSearch = useDebounce(searchText, 500);
+  const debouncedSearch = useDebounce(searchText.trim(), 500);
   const navigate = useNavigate();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const productsPage = useMatch("/products");
@@ -43,6 +43,9 @@ const TopAppBar = () => {
   }, [searchParams]);
 
   useEffect(() => {
+    const current = searchParams.get("search") || "";
+    if (current === debouncedSearch) return;
+
     const params = new URLSearchParams(searchParams);
     if (debouncedSearch) {
       params.set("search", debouncedSearch);
@@ -110,7 +113,7 @@ const TopAppBar = () => {
         <nav className="pointer-events-auto absolute left-1/2 hidden -translate-x-1/2 gap-8 text-sm font-medium tracking-wide lg:flex">
           {[
             { name: "Shop", path: "/" },
-            { name: "All Products", path: "/products" },
+            { name: "Products", path: "/products" },
             { name: "About", path: "/" },
           ].map((link) => (
             <motion.div
@@ -252,7 +255,7 @@ const TopAppBar = () => {
             >
               {[
                 { name: "Shop", to: "/" },
-                { name: "All Products", to: "/products" },
+                { name: "Products", to: "/products" },
                 { name: "About", to: "/about" },
               ].map((item) => (
                 <motion.div

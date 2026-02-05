@@ -119,12 +119,8 @@ export function useFilterPersistence(
   // Whenever filters change, reset page
   useEffect(() => {
     if (!isInitialized) return;
-
-    if (hasUserInteractedRef.current) {
-      setPage(1);
-    } else {
-      hasUserInteractedRef.current = true;
-    }
+    if (hasUserInteractedRef.current) setPage(1);
+    hasUserInteractedRef.current = true;
   }, [selectedCategories, selectedSizes, selectedColors, priceRange, sortBy]);
 
   const clearFilters = () => {

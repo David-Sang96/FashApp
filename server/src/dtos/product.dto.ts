@@ -21,7 +21,7 @@ export interface UpdateProductDTO extends Partial<CreateProductDTO> {}
 
 export interface ProductQueryOptions {
   search?: string;
-  category?: string;
+  category?: string[];
   colors?: string[];
   sizes?: string[];
   priceMin?: number;
