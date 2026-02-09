@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { Product } from "../models/product.model";
 import { IProduct } from "../types/productType";
 
@@ -11,7 +12,11 @@ export class ProductRepository {
     return Product.findById(id).lean();
   }
 
-  async findAll(is_newArrival?: boolean, is_feature?: boolean) {
+  async findByUserId(id: Types.ObjectId) {
+    return Product.find({ userId: id }).lean();
+  }
+
+  async findNewOrFeature(is_newArrival?: boolean, is_feature?: boolean) {
     const filter: any = {};
     if (is_newArrival) filter.is_newArrival = true;
     if (is_feature) filter.is_feature = true;

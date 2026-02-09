@@ -4,6 +4,7 @@ import {
   createProduct,
   deleteProduct,
   getAllProducts,
+  getAllProductsByUserId,
   getFeaturedProducts,
   getNewArrivalProducts,
   getProduct,
@@ -30,6 +31,9 @@ router.get("/cursor", publicLimiter, getProductsCursor);
 router.get("/filters/meta", publicLimiter, getProductsMeta);
 router.get("/new-arrival", publicLimiter, getNewArrivalProducts);
 router.get("/feature", publicLimiter, getFeaturedProducts);
+
+router.get("/admin/all", adminLimiter, isAdmin, getAllProductsByUserId);
+
 router.get(
   "/:id",
   publicLimiter,

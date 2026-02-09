@@ -1,5 +1,6 @@
 import { lazy } from "react";
 import { createBrowserRouter } from "react-router";
+import AdminLayout from "../layouts/AdminLayout";
 import AppLayout from "../layouts/AppLayout";
 import AuthLayout from "../layouts/AuthLayout";
 import RootLayout from "../layouts/RootLayout";
@@ -23,6 +24,7 @@ const ProfileHomePage = lazy(
 );
 
 // Normal
+const NotFound = lazy(() => import("../components/NotFound"));
 const HomePage = lazy(() => import("@/features/home/pages/HomePage"));
 const ProductsPage = lazy(
   () => import("@/features/products/pages/ProductsPage"),
@@ -30,8 +32,18 @@ const ProductsPage = lazy(
 const ProductDetailPage = lazy(
   () => import("@/features/products/pages/ProductDetailPage"),
 );
-
-const NotFound = lazy(() => import("../components/NotFound"));
+const DashboardHomePage = lazy(
+  () => import("@/features/admin/dashboard/pages/HomePage"),
+);
+const ProductHomePage = lazy(
+  () => import("@/features/admin/products/pages/HomePage"),
+);
+const UserHomePage = lazy(
+  () => import("@/features/admin/users/pages/HomePage"),
+);
+const SettingHomePage = lazy(
+  () => import("@/features/admin/settings/HomePage"),
+);
 
 const router = createBrowserRouter([
   {
@@ -72,6 +84,27 @@ const router = createBrowserRouter([
                 <ProductDetailPage />
               </ProtectedRoute>
             ),
+          },
+        ],
+      },
+      {
+        element: <AdminLayout />,
+        children: [
+          {
+            path: "/admin/dashboard",
+            element: <DashboardHomePage />,
+          },
+          {
+            path: "/admin/products",
+            element: <ProductHomePage />,
+          },
+          {
+            path: "/admin/users",
+            element: <UserHomePage />,
+          },
+          {
+            path: "/admin/settings",
+            element: <SettingHomePage />,
           },
         ],
       },

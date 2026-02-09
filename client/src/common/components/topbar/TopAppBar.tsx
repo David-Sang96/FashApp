@@ -19,6 +19,7 @@ import { Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FcSettings } from "react-icons/fc";
 import { FiLogOut } from "react-icons/fi";
+import { RiAdminLine } from "react-icons/ri";
 import { Link, useMatch, useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import CartSheet from "./CartSheet";
@@ -210,6 +211,11 @@ const TopAppBar = () => {
                   <FcSettings className="mr-2 size-4" />
                   Profile
                   <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/admin/dashboard")}>
+                  <RiAdminLine className="mr-2 size-4" />
+                  Admin
+                  <DropdownMenuShortcut>⇧⌘A</DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />

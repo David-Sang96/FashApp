@@ -1,6 +1,10 @@
 import { Types } from "mongoose";
 import { buildProductsCacheKey, redis } from "../config/redis";
-import { CreateProductDTO, ProductQueryOptions } from "../dtos/product.dto";
+import {
+  CreateProductDTO,
+  ProductQueryOptions,
+  UpdateProductDTO,
+} from "../dtos/product.dto";
 import { Product } from "../models/product.model";
 import { ProductRepository } from "../repositories/product.repository";
 import { AppError } from "../utils/AppError";
@@ -22,7 +26,7 @@ export class ProductService {
     return product;
   }
 
-  async updateProduct(id: string, data: any) {
+  async updateProduct(id: string, data: UpdateProductDTO) {
     const updated = await this.repo.updateById(id, data);
     if (!updated) throw new AppError("Product not found", 404);
     await this.clearProductsCache();
@@ -34,6 +38,12 @@ export class ProductService {
     if (!deleted) throw new AppError("Product not found", 404);
     await this.clearProductsCache();
     return deleted;
+  }
+
+  async getProductsByUserId(id: Types.ObjectId) {
+    const products = await this.repo.findByUserId(id);
+    if (!products.length) throw new AppError("Products not found", 404);
+    return products;
   }
 
   async getProducts(options: ProductQueryOptions) {
@@ -241,7 +251,7 @@ export class ProductService {
     const cached = await redis.get(cacheKey);
     if (cached) return JSON.parse(cached);
 
-    const products = await this.repo.findAll(is_newArrival);
+    const products = await this.repo.findNewOrFeature(is_newArrival);
     if (!products) {
       throw new AppError("New Arrival Products not found", 404);
     }
@@ -253,7 +263,7 @@ export class ProductService {
 
     const cached = await redis.get(cacheKey);
     if (cached) return JSON.parse(cached);
-    const products = await this.repo.findAll(undefined, is_feature);
+    const products = await this.repo.findNewOrFeature(undefined, is_feature);
     if (!products) {
       throw new AppError("Featured Products not found", 404);
     }

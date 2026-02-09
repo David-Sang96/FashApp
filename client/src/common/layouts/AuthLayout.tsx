@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { Outlet } from "react-router";
 import { Toaster } from "sonner";
+import Loader from "../components/Loader";
 
 const AuthLayout = () => {
   return (
@@ -11,7 +13,11 @@ const AuthLayout = () => {
         duration={3000}
         expand={true}
       />
-      <Outlet />
+      <section className="flex-1 pb-8">
+        <Suspense fallback={<Loader />}>
+          <Outlet />
+        </Suspense>
+      </section>
     </main>
   );
 };

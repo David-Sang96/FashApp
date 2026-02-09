@@ -59,7 +59,9 @@ export function FilterSidebar({
 
     // Filter by selected size
     if (selectedSizes.length > 0) {
-      filtered = filtered.filter((p) => selectedSizes.includes(p.sizes[0]));
+      filtered = filtered.filter((p) =>
+        p.sizes.some((size) => selectedSizes.includes(size)),
+      );
     }
 
     // Filter by price range
@@ -79,7 +81,13 @@ export function FilterSidebar({
     });
 
     return Array.from(colorMap.values());
-  }, [allProducts, selectedCategories, priceRange, data?.colors]);
+  }, [
+    allProducts,
+    selectedCategories,
+    priceRange,
+    data?.colors,
+    selectedSizes,
+  ]);
 
   if (isLoading || !priceRange) return <Loader />;
 
@@ -92,6 +100,18 @@ export function FilterSidebar({
       ...prev,
       [section]: !prev[section],
     }));
+  };
+
+  const toggleFilter = <T extends string>(
+    value: T,
+    selected: T[],
+    setSelected: React.Dispatch<React.SetStateAction<T[]>>,
+  ) => {
+    const newSelected = selected.includes(value)
+      ? selected.filter((v) => v !== value)
+      : [...selected, value];
+
+    setSelected(newSelected);
   };
 
   const toggleCategory = (category: string) => {

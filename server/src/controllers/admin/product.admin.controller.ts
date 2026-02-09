@@ -46,6 +46,19 @@ export const deleteProduct = catchAsync(async (req: Request, res: Response) => {
 });
 
 /**
+ * @route   GET | /api/v1/products/admin
+ * @desc    Get products with user id
+ * @access  Private
+ */
+export const getAllProductsByUserId = catchAsync(
+  async (req: Request, res: Response) => {
+    if (!req.user) throw new AppError("Not Authenticated", 401);
+    const result = await productService.getProductsByUserId(req.user?._id);
+    res.json({ success: true, result });
+  },
+);
+
+/**
  * @route   GET | /api/v1/products
  * @desc    Get products using page pagination
  * @access  Private

@@ -16,6 +16,7 @@ export function useFilterPersistence(
   const [page, setPage] = useState(1);
   const [isInitialized, setIsInitialized] = useState(false);
   const hasUserInteractedRef = useRef(false);
+  const clearingRef = useRef(false);
 
   // Initialize from URL params OR localStorage on mount
   useEffect(() => {
@@ -78,7 +79,7 @@ export function useFilterPersistence(
 
   // Persist to URL params whenever filters change
   useEffect(() => {
-    if (!isInitialized || !priceRange) return;
+    if (!isInitialized || !priceRange || clearingRef.current) return;
 
     const params = new URLSearchParams(searchParams);
     if (selectedCategories.length)
@@ -88,8 +89,7 @@ export function useFilterPersistence(
     params.set("priceMin", priceRange[0].toFixed(2));
     params.set("priceMax", priceRange[1].toFixed(2));
     if (page && page > 0) params.set("page", String(page));
-    if (sortBy !== "default") params.set("sort", sortBy);
-    else params.delete("sort");
+    if (sortBy) params.set("sort", sortBy);
 
     setSearchParams(params);
 
@@ -124,13 +124,29 @@ export function useFilterPersistence(
   }, [selectedCategories, selectedSizes, selectedColors, priceRange, sortBy]);
 
   const clearFilters = () => {
+    clearingRef.current = true;
+
     setSelectedCategories([]);
     setSelectedSizes([]);
     setSelectedColors([]);
     setPriceRange(defaultPriceRange);
     setSortBy("default");
-    setSearchParams(new URLSearchParams());
+    setPage(1);
+
+    // Clear URL
+    setSearchParams({}); // react-router will now remove all query params
+
+    // Clear localStorage
     localStorage.removeItem(STORAGE_KEY);
+
+    // Reset the "initialized" flag so the useEffect doesn't override URL immediately
+    // optional depending on your behavior
+    hasUserInteractedRef.current = false;
+
+    // Stop clearing after next tick
+    setTimeout(() => {
+      clearingRef.current = false;
+    });
   };
 
   return {
