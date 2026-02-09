@@ -185,7 +185,7 @@ export const getProductsCursor = catchAsync(
 
     const colorArray = colors ? (colors as string).split(",") : [];
     const sizeArray = sizes ? (sizes as string).split(",") : [];
-    const categoryArray = sizes ? (sizes as string).split(",") : [];
+    const categoryArray = category ? (category as string).split(",") : [];
 
     // prettier-ignore
     const newArrival = is_newArrival === "true" ? true : is_newArrival === "false" ? false : undefined;

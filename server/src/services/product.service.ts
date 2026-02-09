@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { buildProductsCacheKey, redis } from "../config/redis";
 import { CreateProductDTO, ProductQueryOptions } from "../dtos/product.dto";
 import { Product } from "../models/product.model";
 import { ProductRepository } from "../repositories/product.repository";
@@ -7,31 +8,66 @@ import { AppError } from "../utils/AppError";
 export class ProductService {
   constructor(private repo = new ProductRepository()) {}
 
+  private async clearProductsCache() {
+    const keys = await redis.keys("products:*");
+    if (keys.length > 0) {
+      await redis.del(keys);
+    }
+  }
+
   async createProduct(data: CreateProductDTO, userId: Types.ObjectId) {
     const product = await this.repo.create({ ...data, userId });
     if (!product) throw new AppError("Product creation failed");
+    await this.clearProductsCache();
     return product;
   }
 
   async updateProduct(id: string, data: any) {
     const updated = await this.repo.updateById(id, data);
-    if (!updated) {
-      throw new AppError("Product not found", 404);
-    }
+    if (!updated) throw new AppError("Product not found", 404);
+    await this.clearProductsCache();
     return updated;
   }
 
   async deleteProduct(id: string) {
     const deleted = await this.repo.deleteById(id);
-    if (!deleted) {
-      throw new AppError("Product not found", 404);
-    }
+    if (!deleted) throw new AppError("Product not found", 404);
+    await this.clearProductsCache();
     return deleted;
   }
 
   async getProducts(options: ProductQueryOptions) {
     // prettier-ignore
     const {search, category, colors,sizes,priceMin,priceMax,is_newArrival,is_feature,sort,page = 1,limit = 12} = options;
+
+    const shouldCache = !search || search.length >= 3;
+    const categoryArr = Array.isArray(category) ? category : [];
+    const colorsArr = Array.isArray(colors) ? colors : [];
+    const sizesArr = Array.isArray(sizes) ? sizes : [];
+
+    const cacheKey = buildProductsCacheKey("products:page", {
+      search: shouldCache ? search : undefined,
+      category: categoryArr.slice().sort(),
+      colors: colorsArr.slice().sort(),
+      sizes: sizesArr.slice().sort(),
+      priceMin,
+      priceMax,
+      is_newArrival,
+      is_feature,
+      sort,
+      page,
+      limit,
+    });
+
+    // 1️⃣ try cache
+    if (shouldCache) {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        console.log("🟢 REDIS HIT:", cacheKey);
+        return JSON.parse(cached);
+      }
+      console.log("🔴 REDIS MISS:", cacheKey);
+    }
 
     const filter: any = {};
 
@@ -86,21 +122,31 @@ export class ProductService {
       Product.countDocuments(filter),
     ]);
 
-    const totalPages = Math.ceil(total / limit);
-    const hasPreviousPage = page > 1 ? true : false;
-    const hasNextPage = page < totalPages ? true : false;
-
-    return {
+    const result = {
       products,
       total,
-      hasPreviousPage,
-      hasNextPage,
       currentPage: page,
-      totalPages,
+      totalPages: Math.ceil(total / limit),
+      hasPreviousPage: page > 1,
+      hasNextPage: page * limit < total,
     };
+
+    // 3. save to redis (TTL!)
+    if (shouldCache) {
+      await redis.set(cacheKey, JSON.stringify(result), "EX", 60);
+    }
+
+    return result;
   }
 
   async getProductsCursor(options: ProductQueryOptions & { cursor?: string }) {
+    const cacheKey = buildProductsCacheKey("products:cursor", options);
+
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
     // prettier-ignore
     const {search, category, colors,sizes,priceMin,priceMax,is_newArrival,is_feature,sort,cursor,limit = 12} = options;
 
@@ -170,11 +216,15 @@ export class ProductService {
 
     const lastProduct = products[products.length - 1];
 
-    return {
+    const result = {
       products,
       nextCursor: lastProduct ? lastProduct._id : null,
       hasMore,
     };
+
+    await redis.set(cacheKey, JSON.stringify(result), "EX", 60);
+
+    return result;
   }
 
   async getProductById(id: string) {
@@ -186,6 +236,11 @@ export class ProductService {
   }
 
   async getArrivalProducts(is_newArrival: boolean) {
+    const cacheKey = `products:newArrival:${is_newArrival}`;
+
+    const cached = await redis.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+
     const products = await this.repo.findAll(is_newArrival);
     if (!products) {
       throw new AppError("New Arrival Products not found", 404);
@@ -194,6 +249,10 @@ export class ProductService {
   }
 
   async getFeaturedProducts(is_feature: boolean) {
+    const cacheKey = `products:isFeatured:${is_feature}`;
+
+    const cached = await redis.get(cacheKey);
+    if (cached) return JSON.parse(cached);
     const products = await this.repo.findAll(undefined, is_feature);
     if (!products) {
       throw new AppError("Featured Products not found", 404);
