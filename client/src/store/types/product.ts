@@ -65,3 +65,9 @@ export interface GetProductsResponse {
     total: number;
   };
 }
+
+export interface CreateProductResponse {
+  success: boolean;
+  message: string;
+  product: Product;
+}

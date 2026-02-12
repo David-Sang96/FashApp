@@ -48,7 +48,7 @@ export default function ProductsPage() {
     search: searchQuery,
     sort: sortBy || "default",
     page,
-    limit: 12,
+    limit: 8,
   });
 
   if (!meta) return null;
@@ -63,7 +63,7 @@ export default function ProductsPage() {
       : 0);
 
   return (
-    <main className="flex-1 py-8 md:py-12">
+    <main className="flex-1 py-8">
       <div className="mx-auto max-w-[110rem] px-3 sm:px-6 lg:px-8">
         {/* Mobile Filter Button */}
         <div className="mb-6 lg:hidden">

@@ -59,8 +59,8 @@ export class AuthService {
     let buffer: Buffer;
     try {
       buffer = await sharp(req.file.buffer)
-        .resize(400, 400, { fit: "cover" }) // square, no stretching
-        .png({ quality: 90 }) // convert to png
+        .resize(400, 400, { fit: "cover", position: "attention" }) // square, no stretching ,auto-detect face and crop:
+        .webp({ quality: 85 }) // convert to webp
         .toBuffer();
     } catch {
       throw new AppError("Invalid image file", 400);

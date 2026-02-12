@@ -9,7 +9,7 @@ export interface CreateProductDTO {
   category: string;
   sizes: string[];
   colors: Color[];
-  images: Image[];
+  images?: Image[];
   is_newArrival: boolean;
   is_feature: boolean;
   rating_count: number;

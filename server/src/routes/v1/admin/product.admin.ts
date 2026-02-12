@@ -3,6 +3,7 @@ import express from "express";
 import {
   createProduct,
   deleteProduct,
+  deleteProductImage,
   getAllProducts,
   getAllProductsByUserId,
   getFeaturedProducts,
@@ -17,10 +18,13 @@ import {
   adminLimiter,
   publicLimiter,
 } from "../../../middlewares/rateLimitter.middleware";
+import { upload } from "../../../middlewares/upload.middleware";
 import { validateRequest } from "../../../middlewares/validateRequest.middlware";
+
 import {
   createProductValidator,
   productIDValidator,
+  productUploadImageValidator,
   updateProductValidator,
 } from "../../../validators/product.validator";
 
@@ -46,19 +50,35 @@ router.post(
   "/",
   adminLimiter,
   isAdmin,
+  upload.array("images", 6),
+  productUploadImageValidator,
+  validateRequest,
   createProductValidator,
   validateRequest,
   createProduct,
 );
+
 router.put(
   "/:id",
   adminLimiter,
   isAdmin,
+  upload.array("images", 6),
+  productUploadImageValidator,
+  validateRequest,
   productIDValidator,
+  validateRequest,
   updateProductValidator,
   validateRequest,
   updateProduct,
 );
+
+router.delete(
+  "/:productId/image/:publicId",
+  adminLimiter,
+  isAdmin,
+  deleteProductImage,
+);
+
 router.delete(
   "/:id",
   adminLimiter,

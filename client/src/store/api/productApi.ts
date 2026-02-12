@@ -47,14 +47,6 @@ export const productApiSlice = apiSlice.injectEndpoints({
     >({
       query: (id) => `/products/${id}`,
     }),
-
-    createProduct: builder.mutation<Product, Partial<Product>>({
-      query: (newProduct) => ({
-        url: "/products",
-        body: newProduct,
-        method: "POST",
-      }),
-    }),
   }),
 });
 
@@ -64,5 +56,4 @@ export const {
   useGetNewArrivalsQuery,
   useGetOneProductQuery,
   useGetProductsMetaQuery,
-  useCreateProductMutation,
 } = productApiSlice;

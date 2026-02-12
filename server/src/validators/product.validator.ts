@@ -1,245 +1,195 @@
-import { body, param } from "express-validator";
+import { body, checkSchema, param } from "express-validator";
 import { validation, validationMessage } from "./schemaValidation";
 
-const isArrayOfStrings = (arr: any[]) =>
-  Array.isArray(arr) && arr.every((item) => typeof item === "string");
+/* 
+ Why checkSchema instead of many body() calls
 
-const isArrayOfColorObjects = (colors: any[]) => {
-  if (!Array.isArray(colors) || colors.length === 0) return false;
+Your original validator:
+Was long
+Had a lot of duplication
+Could validate, but not convert types
 
-  return colors.every((color) => {
-    return (
-      typeof color === "object" &&
-      typeof color.name === "string" &&
-      color.name.trim().length > 0 &&
-      typeof color.hex === "string" &&
-      /^#([0-9A-Fa-f]{6})$/.test(color.hex)
-    );
-  });
+With FormData:
+Everything arrives as string
+Validators like .isArray() will fail unless we convert first
+
+checkSchema lets us do both in one place:
+sanitize → then validate
+That’s the key upgrade.
+
+Mental model to keep forever:
+FormData → strings
+Sanitizer → real types
+Validator → correctness
+Controller → logic
+Schema → persistence
+*/
+
+const parseArray = (value: any) => {
+  /* 
+  Client sends	          Result
+  sizes=L&sizes=XL	    ["L","XL"]
+  sizes=["L","XL"]	    ["L","XL"]
+  sizes=L                 ["L"]
+  */
+  if (Array.isArray(value)) return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return [value];
+  }
 };
 
-export const createProductValidator = [
-  body("name")
-    .trim()
-    .notEmpty()
-    .withMessage(validationMessage.PRODUCTNAME_REQUIRED_MESSAGE)
-    .isLength({ min: validation.PRODUCTNAME_MIN_LENGTH })
-    .withMessage(validationMessage.PRODUCTNAME_MIN_LENGTH_MESSAGE),
+const parseColors = (value: any) => {
+  /* 
+  Purpose: convert JSON strings into real objects:
+      '{"name":"White","hex":"#FFF"}'
+      →
+      { name: "White", hex: "#FFF" }
+  */
+  if (Array.isArray(value)) {
+    return value.map((c) => JSON.parse(c));
+  }
+  return JSON.parse(value);
+};
 
-  body("description")
-    .trim()
-    .notEmpty()
-    .withMessage(validationMessage.DESCRIPTION_REQUIRED_MESSAGE)
-    .isLength({ min: validation.DESCRIPTION_MIN_LENGTH })
-    .withMessage(validationMessage.DESCRIPTION_MIN_LENGTH_MESSAGE),
+// FormData turns: true → "true"
+const parseBoolean = (value: any) => value === true || value === "true";
 
-  body("price")
-    .notEmpty()
-    .withMessage(validationMessage.PRICE_REQUIRED_MESSAGE)
-    .bail()
-    .isFloat({ gt: validation.PRICE_MIN - 1 }) // gt: 0
-    .withMessage(validationMessage.PRICE_MIN_MESSAGE)
-    .custom((value) => validation.PRICE_REGEX.test(value.toString()))
-    .withMessage(validationMessage.PRICE_FORMAT_MESSAGE),
+const productSchema = (isCreate: boolean) =>
+  checkSchema({
+    name: {
+      optional: !isCreate,
+      trim: true,
+      notEmpty: {
+        errorMessage: validationMessage.PRODUCTNAME_REQUIRED_MESSAGE,
+      },
+      isLength: {
+        options: { min: validation.PRODUCTNAME_MIN_LENGTH },
+        errorMessage: validationMessage.PRODUCTNAME_MIN_LENGTH_MESSAGE,
+      },
+    },
 
-  body("instock_count")
-    .notEmpty()
-    .withMessage(validationMessage.STOCK_COUNT_REQUIRED_MESSAGE)
-    .isInt({ min: validation.STOCK_COUNT_MIN })
-    .withMessage(validationMessage.STOCK_COUNT_MIN_MESSAGE),
+    description: {
+      optional: !isCreate,
+      trim: true,
+      notEmpty: {
+        errorMessage: validationMessage.DESCRIPTION_REQUIRED_MESSAGE,
+      },
+      isLength: {
+        options: { min: validation.DESCRIPTION_MIN_LENGTH },
+        errorMessage: validationMessage.DESCRIPTION_MIN_LENGTH_MESSAGE,
+      },
+    },
 
-  body("category")
-    .trim()
-    .notEmpty()
-    .withMessage(validationMessage.CATEGORY_REQUIRED_MESSAGE)
-    .isLength({ min: validation.CATEGORY_MIN_lENGTH })
-    .withMessage(validationMessage.CATEGORY_MIN_lENGTH_MESSAGE),
+    price: {
+      optional: !isCreate,
+      isFloat: {
+        options: { gt: validation.PRICE_MIN - 1 },
+        errorMessage: validationMessage.PRICE_MIN_MESSAGE,
+      },
+      custom: {
+        options: (v) => validation.PRICE_REGEX.test(v.toString()),
+        errorMessage: validationMessage.PRICE_FORMAT_MESSAGE,
+      },
+    },
 
-  // sizes must be an array of strings with at least one item
-  body("sizes")
-    .isArray({ min: 1 })
-    .withMessage(validationMessage.SIZES_MESSAGE)
-    .bail()
-    .custom(isArrayOfStrings)
-    .withMessage("Each size must be a string"),
+    instock_count: {
+      optional: !isCreate,
+      isInt: {
+        options: { min: validation.STOCK_COUNT_MIN },
+        errorMessage: validationMessage.STOCK_COUNT_MIN_MESSAGE,
+      },
+      toInt: true,
+    },
 
-  body("colors")
-    .isArray({ min: 1 })
-    .withMessage(validationMessage.COLORS_MESSAGE),
+    category: {
+      optional: !isCreate,
+      trim: true,
+      notEmpty: {
+        errorMessage: validationMessage.CATEGORY_REQUIRED_MESSAGE,
+      },
+      isLength: {
+        options: { min: validation.CATEGORY_MIN_lENGTH },
+        errorMessage: validationMessage.CATEGORY_MIN_lENGTH_MESSAGE,
+      },
+    },
 
-  // No extra fields, exact keys only
-  body("colors.*").custom((color) => {
-    if (typeof color !== "object" || color === null || Array.isArray(color)) {
-      throw new Error("Each color must be an object");
-    }
+    // sizes
+    sizes: {
+      optional: !isCreate,
+      customSanitizer: {
+        options: parseArray,
+      },
+      isArray: {
+        options: { min: 1 },
+        errorMessage: validationMessage.SIZES_MESSAGE,
+      },
+      custom: {
+        options: (arr) => arr.every((s: any) => typeof s === "string"),
+        errorMessage: "Each size must be a string",
+      },
+    },
 
-    const allowedKeys = ["name", "hex"];
-    const keys = Object.keys(color);
+    // colors
+    colors: {
+      optional: !isCreate,
+      customSanitizer: {
+        options: parseColors,
+      },
+      isArray: {
+        options: { min: 1 },
+        errorMessage: validationMessage.COLORS_MESSAGE,
+      },
+    },
 
-    if (
-      keys.length !== allowedKeys.length ||
-      !allowedKeys.every((k) => keys.includes(k))
-    ) {
-      throw new Error("Each color must contain exactly 'name' and 'hex'");
-    }
+    "colors.*.name": {
+      optional: !isCreate,
+      isString: {
+        errorMessage: "Color name is required",
+      },
+    },
 
-    return true;
-  }),
+    "colors.*.hex": {
+      optional: !isCreate,
+      matches: {
+        options: /^#([0-9A-Fa-f]{6})$/,
+        errorMessage: "Invalid hex color",
+      },
+    },
 
-  body("colors.*.name")
-    .isString()
-    .notEmpty()
-    .withMessage("Color name is required"),
+    is_newArrival: {
+      optional: !isCreate,
+      customSanitizer: {
+        options: parseBoolean,
+      },
+      isBoolean: {
+        errorMessage: validationMessage.NEWARRIVAL_REQUIRED_MESSAGE,
+      },
+    },
 
-  body("colors.*.hex")
-    .matches(/^#([0-9A-Fa-f]{6})$/)
-    .withMessage("Color hex must be a valid hex code"),
+    is_feature: {
+      optional: !isCreate,
+      customSanitizer: {
+        options: parseBoolean,
+      },
+      isBoolean: {
+        errorMessage: validationMessage.FEATURE_REQUIRED_MESSAGE,
+      },
+    },
 
-  body("images")
-    .isArray({ min: 1 })
-    .withMessage(validationMessage.IMAGES_MESSAGE),
+    rating_count: {
+      optional: !isCreate,
+      isInt: {
+        options: { min: validation.RATING_COUNT_MIN },
+        errorMessage: validationMessage.RATING_MIN_MESSAGE,
+      },
+      toInt: true,
+    },
+  });
 
-  body("images.*").custom((image) => {
-    // 1. Must be an object
-    if (typeof image !== "object" || Array.isArray(image) || image === null) {
-      throw new Error("Each image must be an object");
-    }
-
-    // 2. Must contain exactly these 2 keys
-    const allowedKeys = ["image_url", "public_id"];
-    const keys = Object.keys(image);
-
-    if (
-      keys.length !== allowedKeys.length ||
-      !allowedKeys.every((k) => keys.includes(k))
-    ) {
-      throw new Error(
-        "Each image object must contain exactly 'image_url' and 'public_id'",
-      );
-    }
-
-    // 3. Both keys must be strings
-    if (
-      typeof image.image_url !== "string" ||
-      typeof image.public_id !== "string"
-    ) {
-      throw new Error("'image_url' and 'public_id' must be strings");
-    }
-    return true;
-  }),
-
-  body("images.*.image_url")
-    .isString()
-    .matches(/^https?:\/\/.+/)
-    .withMessage("image_url must be a valid URL"),
-
-  body("images.*.public_id")
-    .isString()
-    .notEmpty()
-    .withMessage("public_id is required"),
-
-  body("is_newArrival")
-    .exists()
-    .withMessage(validationMessage.NEWARRIVAL_REQUIRED_MESSAGE)
-    .isBoolean()
-    .withMessage(validationMessage.NEWARRIVAL_REQUIRED_MESSAGE),
-
-  body("is_feature")
-    .exists()
-    .withMessage(validationMessage.FEATURE_REQUIRED_MESSAGE)
-    .isBoolean()
-    .withMessage(validationMessage.FEATURE_REQUIRED_MESSAGE),
-
-  body("rating_count")
-    .notEmpty()
-    .withMessage(validationMessage.RATING_REQUIRED_MESSAGE)
-    .isInt({ min: validation.RATING_COUNT_MIN })
-    .withMessage(validationMessage.RATING_MIN_MESSAGE),
-];
-
-export const updateProductValidator = [
-  body("name")
-    .optional()
-    .trim()
-    .isLength({ min: validation.PRODUCTNAME_MIN_LENGTH })
-    .withMessage(validationMessage.PRODUCTNAME_MIN_LENGTH_MESSAGE),
-
-  body("description")
-    .optional()
-    .trim()
-    .isLength({ min: validation.DESCRIPTION_MIN_LENGTH })
-    .withMessage(validationMessage.DESCRIPTION_MIN_LENGTH_MESSAGE),
-
-  body("price")
-    .optional()
-    .isFloat({ gt: validation.PRICE_MIN - 1 })
-    .withMessage(validationMessage.PRICE_MIN_MESSAGE)
-    .custom((value) => validation.PRICE_REGEX.test(value.toString()))
-    .withMessage(validationMessage.PRICE_FORMAT_MESSAGE),
-
-  body("instock_count")
-    .optional()
-    .isInt({ min: validation.STOCK_COUNT_MIN })
-    .withMessage(validationMessage.STOCK_COUNT_MIN_MESSAGE),
-
-  body("category")
-    .optional()
-    .trim()
-    .isLength({ min: validation.CATEGORY_MIN_lENGTH })
-    .withMessage(validationMessage.CATEGORY_MIN_lENGTH_MESSAGE),
-
-  body("sizes")
-    .optional()
-    .isArray({ min: 1 })
-    .withMessage(validationMessage.SIZES_MESSAGE)
-    .bail()
-    .custom((arr) => arr.every((item: any) => typeof item === "string"))
-    .withMessage("Each size must be a string"),
-
-  body("colors")
-    .optional()
-    .isArray({ min: 1 })
-    .withMessage(validationMessage.COLORS_MESSAGE)
-    .bail()
-    .custom((arr) => arr.every((item: any) => typeof item === "string"))
-    .withMessage("Each color must be a string"),
-
-  body("images")
-    .optional()
-    .isArray({ min: 1 })
-    .withMessage(validationMessage.IMAGES_MESSAGE),
-
-  body("images.*.url")
-    .optional()
-    .exists({ checkFalsy: true })
-    .withMessage("Each image must have a URL")
-    .isString()
-    .withMessage("Image URL must be a string")
-    .isURL()
-    .withMessage("Image URL must be a valid URL"),
-
-  body("images.*.public_alt")
-    .optional()
-    .exists({ checkFalsy: true })
-    .withMessage("Each image must have public_alt")
-    .isString()
-    .withMessage("public_alt must be a string "),
-
-  body("is_newArrival")
-    .optional()
-    .isBoolean()
-    .withMessage(validationMessage.NEWARRIVAL_REQUIRED_MESSAGE),
-
-  body("is_feature")
-    .optional()
-    .isBoolean()
-    .withMessage(validationMessage.FEATURE_REQUIRED_MESSAGE),
-
-  body("rating_count")
-    .optional()
-    .isInt({ min: validation.RATING_COUNT_MIN })
-    .withMessage(validationMessage.RATING_MIN_MESSAGE),
-];
+export const createProductValidator = productSchema(true);
+export const updateProductValidator = productSchema(false);
 
 export const productIDValidator = [
   param("id").isMongoId().withMessage("Invalid product ID"),
@@ -249,4 +199,16 @@ export const productIDValidator = [
   //   }
   //   return true;
   // }),
+];
+
+export const productUploadImageValidator = [
+  body("images").custom((_value, { req }) => {
+    if (!req.files || !Array.isArray(req.files)) {
+      throw new Error("At least one image is required");
+    }
+    if (req.files.length > 6) {
+      throw new Error("Maximum 6 images allowed");
+    }
+    return true;
+  }),
 ];

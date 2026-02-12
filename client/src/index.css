@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -202,4 +203,47 @@
 
 .animate-slide-right {
   animation: slide-right 1.5s ease-in-out infinite;
+}
+
+/* =========================
+   THEMED SCROLLBAR
+   ========================= */
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 6px; /* 👈 slim */
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--primary) 70%, var(--muted));
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Optional: corner */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* =========================
+   Firefox
+   ========================= */
+* {
+  scrollbar-width: thin; /* slim */
+  scrollbar-color: color-mix(in oklch, var(--primary) 70%, var(--muted))
+    var(--muted);
+}
+
+.ProseMirror-focused {
+  outline: none !important;
+  box-shadow: none !important;
 }

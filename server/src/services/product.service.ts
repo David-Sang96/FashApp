@@ -1,5 +1,10 @@
+import { v2 as cloudinary } from "cloudinary";
+import { Request } from "express";
 import { Types } from "mongoose";
+import sharp from "sharp";
+import { uploadOne } from "../config/cloudinary";
 import { buildProductsCacheKey, redis } from "../config/redis";
+import { sanitizeRichText } from "../config/sanitizeHtml";
 import {
   CreateProductDTO,
   ProductQueryOptions,
@@ -7,6 +12,7 @@ import {
 } from "../dtos/product.dto";
 import { Product } from "../models/product.model";
 import { ProductRepository } from "../repositories/product.repository";
+import { Image } from "../types/productType";
 import { AppError } from "../utils/AppError";
 
 export class ProductService {
@@ -19,23 +25,130 @@ export class ProductService {
     }
   }
 
-  async createProduct(data: CreateProductDTO, userId: Types.ObjectId) {
-    const product = await this.repo.create({ ...data, userId });
+  async createProduct(req: Request) {
+    if (!req.user) throw new AppError("User not authenticated", 401);
+    const files = req.files as Express.Multer.File[];
+    const { description, ...rest } = req.body as CreateProductDTO;
+
+    if (!description || typeof description !== "string") {
+      throw new AppError("Invalid description", 400);
+    }
+    const cleanDescription = sanitizeRichText(description);
+    const user = await this.repo.findByUserId(req.user._id);
+    if (!files.length) throw new AppError("No file uploaded", 400);
+
+    //Process image with Sharp
+    let processedBuffers: Buffer[];
+
+    try {
+      processedBuffers = await Promise.all(
+        files.map((file) =>
+          sharp(file.buffer)
+            .resize({
+              width: 1000,
+              height: 1000,
+              fit: "inside",
+              withoutEnlargement: true,
+            })
+            .webp({ quality: 90 })
+            .toBuffer(),
+        ),
+      );
+    } catch {
+      throw new AppError("Invalid image file", 400);
+    }
+
+    const uploadedImages = await Promise.all(
+      processedBuffers.map((buffer) => uploadOne(buffer, "fashApp/products")),
+    );
+
+    const product = await this.repo.create({
+      ...rest,
+      description: cleanDescription,
+      userId: req.user._id,
+      images: uploadedImages,
+    });
+
     if (!product) throw new AppError("Product creation failed");
     await this.clearProductsCache();
     return product;
   }
 
-  async updateProduct(id: string, data: UpdateProductDTO) {
-    const updated = await this.repo.updateById(id, data);
+  async updateProduct(req: Request) {
+    const { description, ...rest } = req.body as UpdateProductDTO;
+    const files = req.files as Express.Multer.File[] | undefined;
+    const id = req.params.id as string;
+    const existingProduct = await this.repo.findById(id);
+
+    let cleanDescription: string | undefined;
+    if (typeof description === "string") {
+      cleanDescription = sanitizeRichText(description);
+    }
+    if (!existingProduct) throw new AppError("Product not found", 404);
+    let uploadedImages: Image[] = [];
+
+    if (files && files.length > 0) {
+      try {
+        // Process images
+        const processedBuffers = await Promise.all(
+          files.map((file) =>
+            sharp(file.buffer)
+              .resize({
+                width: 1000,
+                height: 1000,
+                fit: "inside",
+                withoutEnlargement: true,
+              })
+              .webp({ quality: 90 })
+              .toBuffer(),
+          ),
+        );
+
+        uploadedImages = await Promise.all(
+          processedBuffers.map((buffer) =>
+            uploadOne(buffer, "fashApp/products"),
+          ),
+        );
+      } catch {
+        throw new AppError("Invalid image file", 400);
+      }
+    }
+
+    const updated = await this.repo.updateById(String(existingProduct._id), {
+      ...rest,
+      ...(cleanDescription && { description: cleanDescription }),
+      ...(uploadedImages.length > 0 && {
+        images: [...(existingProduct.images ?? []), ...uploadedImages],
+      }),
+    });
+
     if (!updated) throw new AppError("Product not found", 404);
     await this.clearProductsCache();
     return updated;
   }
 
   async deleteProduct(id: string) {
-    const deleted = await this.repo.deleteById(id);
-    if (!deleted) throw new AppError("Product not found", 404);
+    const existingProduct = await this.repo.findById(id);
+    if (!existingProduct) throw new AppError("Product not found", 404);
+
+    const publicIds = existingProduct.images.map((item) => item.public_id);
+
+    // Instead of deleting one by one: Use bulk delete:
+    //✔ Faster
+    // ✔ Fewer API calls
+    // ✔ More scalable
+    try {
+      if (publicIds.length) {
+        await cloudinary.api.delete_resources(publicIds);
+      }
+    } catch (error) {
+      console.error(
+        "Cloudinary delete image failed in deleting product:",
+        error,
+      );
+    }
+
+    const deleted = await this.repo.deleteById(existingProduct._id);
     await this.clearProductsCache();
     return deleted;
   }

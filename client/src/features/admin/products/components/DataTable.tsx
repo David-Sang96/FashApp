@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  type ColumnDef,
   type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
@@ -10,7 +10,7 @@ import {
   useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { MoreHorizontal, SlidersHorizontal } from "lucide-react";
+import { Loader2, MoreHorizontal, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 
@@ -39,13 +39,38 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import CreateProductForm from "./CreateProductForm";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  useCreateProductMutation,
+  useDeleteProductMutation,
+  useUpdateProductMutation,
+} from "@/store/api/adminApi";
+import type { Product } from "@/store/types/product";
+import { toast } from "sonner";
+import { columns } from "./Columns";
 import { FacetedFilter } from "./FacetedFilter";
+import ProductForm from "./ProductForm";
 
 /* -------------------------------------------
    Mobile Card (reuses TanStack row)
 -------------------------------------------- */
-function ProductMobileCard({ row }: { row: any }) {
+function ProductMobileCard({
+  row,
+  onEdit,
+  onDelete,
+}: {
+  row: any;
+  onEdit: (product: any) => void;
+  onDelete: (product: any) => void;
+}) {
   const product = row.original;
 
   return (
@@ -63,8 +88,15 @@ function ProductMobileCard({ row }: { row: any }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(product)}>
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-red-600"
+              onClick={() => onDelete(product)}
+            >
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -93,22 +125,31 @@ function ProductMobileCard({ row }: { row: any }) {
 /* -------------------------------------------
    DataTable
 -------------------------------------------- */
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data?: TData[];
+interface DataTableProps {
+  data?: Product[];
 }
 
-export function DataTable<TData, TValue>({
-  columns,
-  data = [],
-}: DataTableProps<TData, TValue>) {
+export function DataTable({ data = [] }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [createProduct, { isLoading: createLoading }] =
+    useCreateProductMutation();
+  const [open, setOpen] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [mode, setMode] = useState<"create" | "edit">("create");
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [updateProduct, { isLoading: updateLoading }] =
+    useUpdateProductMutation();
+  const [deleteProduct, { isLoading: deleteLoading }] =
+    useDeleteProductMutation();
 
   const table = useReactTable({
     data,
-    columns,
+    columns: columns({
+      onEdit: handleEdit,
+      onDelete: handleDelete,
+    }),
     state: {
       sorting,
       columnFilters,
@@ -123,6 +164,27 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  function handleEdit(product: Product) {
+    setMode("edit");
+    setSelectedProduct(product);
+    setOpen(true);
+  }
+
+  function handleDelete(product: Product) {
+    setSelectedProduct(product);
+    setOpenDeleteDialog(true);
+  }
+
+  async function handleDeleteProduct() {
+    try {
+      const { message } = await deleteProduct(selectedProduct._id).unwrap();
+      toast.success(message);
+      setOpenDeleteDialog(false);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Delete failed");
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -133,8 +195,90 @@ export function DataTable<TData, TValue>({
             {data.length} total products
           </p>
         </div>
-        <CreateProductForm />
+        <Button
+          onClick={() => {
+            setMode("create");
+            setSelectedProduct(null);
+            setOpen(true);
+          }}
+          className="cursor-pointer rounded-full"
+        >
+          Add Product
+        </Button>
+        {/* Product create / update */}
+        {/* 
+            Always key modal forms when:
+            Same form used for create/edit
+            Different data sources
+            Complex internal state
+            File uploads involved
+        */}
+        <ProductForm
+          key={mode === "create" ? "create" : selectedProduct?._id}
+          open={open}
+          onOpenChange={(value) => {
+            setOpen(value);
+            if (!value) {
+              setSelectedProduct(null);
+              setMode("create");
+            }
+          }}
+          mode={mode}
+          initialValues={selectedProduct}
+          isLoading={updateLoading || createLoading}
+          onSubmit={async (formData) => {
+            try {
+              if (mode === "create") {
+                const { message } = await createProduct(formData).unwrap();
+                toast.success(message);
+              } else {
+                const { message } = await updateProduct({
+                  id: selectedProduct._id,
+                  data: formData,
+                }).unwrap();
+                toast.success(message);
+              }
+
+              setOpen(false);
+              setSelectedProduct(null);
+            } catch (err: any) {
+              toast.error(err?.data?.message || "Operation failed");
+            }
+          }}
+        />
       </div>
+
+      {/* Delete Dialog */}
+      <Dialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete Product</DialogTitle>
+            <DialogDescription>
+              Are you sure that you want to delete this product permanently?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button
+                variant="outline"
+                disabled={deleteLoading}
+                className="cursor-pointer rounded-2xl"
+              >
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              disabled={deleteLoading}
+              variant={"destructive"}
+              onClick={handleDeleteProduct}
+              className="cursor-pointer rounded-2xl"
+            >
+              {deleteLoading && <Loader2 className="size-4 animate-spin" />}
+              {deleteLoading ? "Deleting" : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Toolbar */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center">
@@ -144,7 +288,7 @@ export function DataTable<TData, TValue>({
           onChange={(e) =>
             table.getColumn("name")?.setFilterValue(e.target.value)
           }
-          className="max-w-sm"
+          className="max-w-sm rounded-full"
         />
 
         <FacetedFilter
@@ -234,14 +378,21 @@ export function DataTable<TData, TValue>({
         {table.getRowModel().rows.length ? (
           table
             .getRowModel()
-            .rows.map((row) => <ProductMobileCard key={row.id} row={row} />)
+            .rows.map((row) => (
+              <ProductMobileCard
+                key={row.id}
+                row={row}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))
         ) : (
           <p className="text-muted-foreground py-10 text-center">No results.</p>
         )}
       </div>
 
       {/* Pagination */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 pe-4 md:flex-row md:items-center md:justify-between">
         <p className="text-muted-foreground text-sm">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} selected
@@ -274,18 +425,20 @@ export function DataTable<TData, TValue>({
 
           <div className="flex gap-2">
             <Button
-              size="icon"
+              size="sm"
               variant="outline"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
+              className="cursor-pointer rounded-xl"
             >
               <FaChevronLeft className="size-3" />
             </Button>
             <Button
-              size="icon"
+              size="sm"
               variant="outline"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
+              className="cursor-pointer rounded-xl"
             >
               <FaChevronRight className="size-3" />
             </Button>

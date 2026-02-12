@@ -8,9 +8,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Product } from "@/store/types/product";
 import { type ColumnDef } from "@tanstack/react-table";
+import DOMPurify from "dompurify";
 import { ArrowUpDown, MoreHorizontal, Pencil, Trash } from "lucide-react";
 
-export const columns: ColumnDef<Product>[] = [
+export const columns = ({
+  onEdit,
+  onDelete,
+}: {
+  onEdit: (product: Product) => void;
+  onDelete: (product: Product) => void;
+}): ColumnDef<Product>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -21,11 +28,13 @@ export const columns: ColumnDef<Product>[] = [
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
+        className="border border-black dark:border-white"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
+        className="border border-black dark:border-white"
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
       />
@@ -49,14 +58,20 @@ export const columns: ColumnDef<Product>[] = [
         </div>
       );
     },
-    cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-medium">{row.original.name}</span>
-        <span className="text-muted-foreground max-w-55 truncate text-sm">
-          {row.original.description}
-        </span>
-      </div>
-    ),
+    cell: ({ row }) => {
+      //If you want just plain text without HTML formatting, extract the text content instead:
+      const plainText = DOMPurify.sanitize(row.original.description, {
+        ALLOWED_TAGS: [],
+      });
+      return (
+        <div className="flex flex-col">
+          <span className="font-medium">{row.original.name}</span>
+          <span className="line-clamp-2 max-w-55 text-sm text-white/80">
+            {plainText}
+          </span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "category",
@@ -132,12 +147,11 @@ export const columns: ColumnDef<Product>[] = [
   },
   {
     accessorKey: "sizes",
-    header: () => <div className="text-center">Sizes</div>,
+    header: "Sizes",
     cell: ({ getValue }) => {
       const sizes = getValue<string[]>();
-
       return (
-        <div className="flex justify-center gap-1">
+        <div className="flex w-40 flex-wrap gap-1">
           {sizes.map((size) => (
             <div key={size} className="rounded-full border px-2 py-0.5 text-xs">
               {size}
@@ -175,7 +189,7 @@ export const columns: ColumnDef<Product>[] = [
       return flags;
     },
     filterFn: (row, id, value: string[]) => {
-      // 👇 VERY IMPORTANT (see problem 2)
+      //  VERY IMPORTANT (see problem 2)
       if (!value || value.length === 0) return true;
 
       const flags = row.getValue<string[]>(id);
@@ -185,12 +199,12 @@ export const columns: ColumnDef<Product>[] = [
     cell: ({ row }) => (
       <div className="flex justify-center gap-1">
         {row.original.is_newArrival && (
-          <span className="rounded-full bg-green-500 px-2 py-0.5 text-xs">
+          <span className="rounded-full bg-green-500 px-2 py-0.5 text-xs text-white">
             New
           </span>
         )}
         {row.original.is_feature && (
-          <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs">
+          <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs text-white">
             Featured
           </span>
         )}
@@ -214,20 +228,14 @@ export const columns: ColumnDef<Product>[] = [
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => {
-                  console.log("Edit", product._id);
-                }}
-              >
+              <DropdownMenuItem onClick={() => onEdit(product)}>
                 <Pencil className="mr-2 size-4" />
                 Edit
               </DropdownMenuItem>
 
               <DropdownMenuItem
                 className="text-red-600 focus:text-red-700"
-                onClick={() => {
-                  console.log("Delete", product._id);
-                }}
+                onClick={() => onDelete(product)}
               >
                 <Trash className="mr-2 size-4" />
                 Delete

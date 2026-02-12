@@ -22,6 +22,20 @@ export const authApiSlice = apiSlice.injectEndpoints({
       query: () => "/auth/me",
       providesTags: (result) =>
         result ? [{ type: "User", id: result.user._id }] : ["User"],
+      /* 
+         With IDs:
+        You can invalidate only this user
+        Avoid unnecessary refetches
+        Better cache control
+
+        providesTags:
+        static → simple cache
+        function → ID-based cache
+
+        onQueryStarted:
+        side effects
+        sync other slices
+      */
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;

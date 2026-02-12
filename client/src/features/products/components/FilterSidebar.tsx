@@ -156,7 +156,9 @@ export function FilterSidebar({
     priceRange[1] < data.maxPrice;
 
   return (
-    <aside className={`${isMobile ? "p-4" : "w-xs pr-8"} flex-shrink-0`}>
+    <aside
+      className={` ${isMobile ? "max-h-[100vh] overflow-y-auto p-4" : "w-xs pr-8"} flex-shrink-0`}
+    >
       {isMobile && (
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-lg font-medium">Filters</h2>

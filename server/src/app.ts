@@ -14,6 +14,7 @@ import swaggerUi from "swagger-ui-express";
 import { ENV_VARS } from "./config/envVars";
 import passport from "./config/passport";
 import { errorHandler } from "./middlewares/errorHandler";
+import { multerErrorHandler } from "./middlewares/multerErrorHandler.middleware";
 import routes from "./routes/v1";
 import { swaggerSpec } from "./swagger";
 
@@ -62,5 +63,8 @@ app
 // 3. Rate Limiting & Routes (The Logic)
 app.use("/api/v1", routes); // The "Bouncer" and the "VIP Section"
 
-// 4. The Safety Net (The Final Destination)
+// 4. Multer Errors (File Upload Guard)
+app.use(multerErrorHandler);
+
+// 5. The Safety Net (The Final Destination)
 app.use(errorHandler);

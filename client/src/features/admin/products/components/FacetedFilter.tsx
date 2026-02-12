@@ -49,7 +49,7 @@ export function FacetedFilter({ title, column, options }: FacetedFilterProps) {
               key={option.value}
               className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5"
               onSelect={(e) => {
-                e.preventDefault(); // ⛔ don't close menu
+                e.preventDefault(); //  don't close menu
 
                 if (isSelected) selected.delete(option.value);
                 else selected.add(option.value);

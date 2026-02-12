@@ -9,5 +9,5 @@ export const isAdmin = catchAsync(
     if (user.role !== "admin")
       throw new AppError("You are not allowed to access this resource", 403);
     next();
-  }
+  },
 );

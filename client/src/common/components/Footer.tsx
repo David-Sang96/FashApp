@@ -30,7 +30,7 @@ const Footer = () => {
 
   return (
     <footer className="border-border bg-card border-t">
-      <div className="container mx-auto px-6 py-12">
+      <div className="px-6 py-12">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:gap-12">
           {/* Brand */}
           <div className="animate-fade-in col-span-2 md:col-span-1">

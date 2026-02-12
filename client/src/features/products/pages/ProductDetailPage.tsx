@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
 import { useGetOneProductQuery } from "@/store/api/productApi";
+import DOMPurify from "dompurify";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
@@ -66,12 +67,14 @@ const ProductDetailPage = () => {
     );
   }
 
+  const sanitizedHTML = DOMPurify.sanitize(product.description);
+
   return (
     <div className="lg:px-8">
       {isLoading ? (
         <Loader />
       ) : (
-        <div className="px-3 pt-4 md:px-4">
+        <div className="px-3 pt-4 md:px-4 lg:pb-10">
           <button
             onClick={() => navigate(-1)}
             className="hover:text-primary mb-4 flex cursor-pointer items-center gap-2 text-sm transition-colors md:text-base"
@@ -131,9 +134,10 @@ const ProductDetailPage = () => {
                 <div className="py-3 text-xl font-semibold">
                   ${product.price}
                 </div>
-                <div className="border-b-2 pb-3 text-sm">
-                  {product.description}
-                </div>
+                <div
+                  dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
+                  className="prose prose-invert max-w-none border-b-2 pb-3 text-sm"
+                />
 
                 {/* Colors */}
                 <div className="border-b-2 py-3">

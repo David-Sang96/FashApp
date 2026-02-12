@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { CreateProductDTO, UpdateProductDTO } from "../../dtos/product.dto";
+import { deleteOne } from "../../config/cloudinary";
 import { Product } from "../../models/product.model";
 import { ProductService } from "../../services/product.service";
 import { AppError } from "../../utils/AppError";
@@ -13,9 +13,7 @@ const productService = new ProductService();
  * @access  Private
  */
 export const createProduct = catchAsync(async (req: Request, res: Response) => {
-  if (!req.user) throw new AppError("User not authenticated", 401);
-  const data = req.body as CreateProductDTO;
-  const product = await productService.createProduct(data, req.user._id);
+  const product = await productService.createProduct(req);
   res
     .status(201)
     .json({ success: true, message: "Product created successfully", product });
@@ -27,11 +25,7 @@ export const createProduct = catchAsync(async (req: Request, res: Response) => {
  * @access  Private
  */
 export const updateProduct = catchAsync(async (req: Request, res: Response) => {
-  const data = req.body as UpdateProductDTO;
-  const product = await productService.updateProduct(
-    req.params.id as string,
-    data,
-  );
+  const product = await productService.updateProduct(req);
   res.json({ success: true, message: "Product updated successfully", product });
 });
 
@@ -221,5 +215,28 @@ export const getProductsCursor = catchAsync(
     });
 
     res.json({ success: true, result });
+  },
+);
+
+export const deleteProductImage = catchAsync(
+  async (req: Request, res: Response) => {
+    const { productId, publicId } = req.params;
+    const decodedPublicId = decodeURIComponent(publicId as string);
+
+    const existingProduct = await productService.getProductById(
+      productId as string,
+    );
+    if (!existingProduct) {
+      throw new AppError("Product not found", 404);
+    }
+
+    if (existingProduct.images.length > 1) await deleteOne(publicId as string);
+
+    existingProduct.images = existingProduct.images.filter(
+      (img) => img.public_id !== decodedPublicId,
+    );
+    await existingProduct.save();
+
+    res.json({ success: true, message: "Image deleted successfully" });
   },
 );

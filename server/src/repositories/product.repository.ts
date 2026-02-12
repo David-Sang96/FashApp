@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { HydratedDocument, Types } from "mongoose";
 import { Product } from "../models/product.model";
 import { IProduct } from "../types/productType";
 
@@ -9,11 +9,11 @@ export class ProductRepository {
   }
 
   async findById(id: string) {
-    return Product.findById(id).lean();
+    return Product.findById(id);
   }
 
   async findByUserId(id: Types.ObjectId) {
-    return Product.find({ userId: id }).lean();
+    return Product.find({ userId: id }).sort({ createdAt: -1 }).lean();
   }
 
   async findNewOrFeature(is_newArrival?: boolean, is_feature?: boolean) {
@@ -31,7 +31,7 @@ export class ProductRepository {
     });
   }
 
-  async deleteById(id: string) {
+  async deleteById(id: Types.ObjectId) {
     return Product.findByIdAndDelete(id);
   }
 
@@ -47,5 +47,9 @@ export class ProductRepository {
       return Product.distinct(`colors.${value}`);
     }
     return Product.distinct(value);
+  }
+
+  async save(product: HydratedDocument<IProduct>) {
+    return product.save({ validateBeforeSave: false });
   }
 }

@@ -1,6 +1,5 @@
 import Loader from "@/common/components/Loader";
 import { useGetAdminProductsQuery } from "@/store/api/adminApi";
-import { columns } from "../components/columns";
 import { DataTable } from "../components/DataTable";
 
 const HomePage = () => {
@@ -11,7 +10,7 @@ const HomePage = () => {
   if (isError || !data) {
     return <p className="text-center text-gray-500">Failed to load products</p>;
   }
-  return <DataTable columns={columns} data={data.result} />;
+  return <DataTable data={data.result} />;
 };
 
 export default HomePage;

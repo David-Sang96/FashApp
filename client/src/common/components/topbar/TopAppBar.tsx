@@ -19,7 +19,7 @@ import { Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FcSettings } from "react-icons/fc";
 import { FiLogOut } from "react-icons/fi";
-import { RiAdminLine } from "react-icons/ri";
+import { GrDashboard } from "react-icons/gr";
 import { Link, useMatch, useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import CartSheet from "./CartSheet";
@@ -113,7 +113,7 @@ const TopAppBar = () => {
         {/* CENTER NAV – LOCKED */}
         <nav className="pointer-events-auto absolute left-1/2 hidden -translate-x-1/2 gap-8 text-sm font-medium tracking-wide lg:flex">
           {[
-            { name: "Shop", path: "/" },
+            { name: "Home", path: "/" },
             { name: "Products", path: "/products" },
             { name: "About", path: "/" },
           ].map((link) => (
@@ -213,8 +213,8 @@ const TopAppBar = () => {
                   <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/admin/dashboard")}>
-                  <RiAdminLine className="mr-2 size-4" />
-                  Admin
+                  <GrDashboard className="mr-2 size-4" />
+                  Dashboard
                   <DropdownMenuShortcut>⇧⌘A</DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
@@ -260,7 +260,7 @@ const TopAppBar = () => {
               }}
             >
               {[
-                { name: "Shop", to: "/" },
+                { name: "Home", to: "/" },
                 { name: "Products", to: "/products" },
                 { name: "About", to: "/about" },
               ].map((item) => (
