@@ -18,6 +18,7 @@ export interface IUser extends Document {
   verificationTokenExpires: Date | undefined;
   passwordResetToken: string | undefined;
   passwordResetExpires: Date | undefined;
+  lastActiveAt: Date;
   lastLogin: Date;
   createdAt: Date;
   updatedAt: Date;

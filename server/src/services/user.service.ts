@@ -1,14 +1,14 @@
-import { UserRepositary } from "../repositories/user.repository";
+import { UserRepository } from "../repositories/user.repository";
 import { IUser } from "../types/userType";
 import { AppError } from "../utils/AppError";
 
 export class UserService {
   static async getUsers() {
-    return await UserRepositary.findAllActiveUser();
+    return await UserRepository.findAllUser();
   }
 
   static async getUser(id: string) {
-    return await UserRepositary.findByIdOrEmail({ id });
+    return await UserRepository.findByIdOrEmail({ id });
   }
 
   static async updateUser(
@@ -17,7 +17,7 @@ export class UserService {
     role: "admin" | "user",
     currentUser: IUser,
   ) {
-    const user = await UserRepositary.findByIdOrEmail({
+    const user = await UserRepository.findByIdOrEmail({
       email: currentUser.email,
       id: currentUser._id,
     });
@@ -27,7 +27,7 @@ export class UserService {
     user.name = name;
     user.email = email;
     user.role = role;
-    await UserRepositary.save(user);
+    await UserRepository.save(user);
 
     return user;
   }

@@ -55,7 +55,7 @@ import {
 } from "@/store/api/adminApi";
 import type { Product } from "@/store/types/product";
 import { toast } from "sonner";
-import { columns } from "./Columns";
+import { useProductColumns } from "./Columns";
 import { FacetedFilter } from "./FacetedFilter";
 import ProductForm from "./ProductForm";
 
@@ -146,7 +146,7 @@ export function DataTable({ data = [] }: DataTableProps) {
 
   const table = useReactTable({
     data,
-    columns: columns({
+    columns: useProductColumns({
       onEdit: handleEdit,
       onDelete: handleDelete,
     }),
@@ -252,7 +252,7 @@ export function DataTable({ data = [] }: DataTableProps) {
       <Dialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete Product</DialogTitle>
+            <DialogTitle>Delete {selectedProduct.name}</DialogTitle>
             <DialogDescription>
               Are you sure that you want to delete this product permanently?
             </DialogDescription>
@@ -362,8 +362,8 @@ export function DataTable({ data = [] }: DataTableProps) {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
+                  colSpan={table.getAllLeafColumns().length}
+                  className="h-32 text-center align-middle"
                 >
                   No results.
                 </TableCell>

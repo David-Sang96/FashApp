@@ -8,11 +8,6 @@ export interface Color {
   hex: string;
 }
 
-export interface TotalProductOfCat {
-  category: string;
-  total: number;
-}
-
 export interface Product {
   _id: string;
   name: string;
@@ -35,9 +30,23 @@ export interface ProductMeta {
   colors: { name: string; hex: string }[];
   sizes: string[];
   categories: string[];
-  totalProductOfEachCategory: TotalProductOfCat[];
+  totalProductOfEachCategory: { name: string; count: number }[];
   minPrice: number;
   maxPrice: number;
+  averageRating: number;
+  signupTrend: { month: string; users: number }[];
+  recentUsers: {
+    _id: string;
+    name: string;
+    email: string;
+    emailVerified: boolean;
+    active: boolean;
+    role: "admin" | "user";
+    provider: "google" | "local";
+    avatar: { image_url: string; public_alt: string };
+    lastActiveAt: string;
+    lastLogin: string;
+  }[];
 }
 
 export interface GetProductsParams {

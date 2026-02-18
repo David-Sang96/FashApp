@@ -66,6 +66,7 @@ const userSchema = new Schema<IUser>(
     verificationTokenExpires: { type: Date, select: false, default: undefined },
     passwordResetToken: { type: String, select: false, default: undefined },
     passwordResetExpires: { type: Date, select: false, default: undefined },
+    lastActiveAt: Date,
     lastLogin: Date,
   },
   { timestamps: true },

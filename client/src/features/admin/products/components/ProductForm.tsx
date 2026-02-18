@@ -120,7 +120,6 @@ const ProductForm = ({
     }
   };
 
-  console.log(existingImages);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
@@ -251,6 +250,7 @@ const ProductForm = ({
                         {...field}
                         onChange={(e) => field.onChange(Number(e.target.value))}
                         className="rounded-full"
+                        disabled
                       />
                     </FormControl>
                     <FormMessage />

@@ -55,7 +55,10 @@ const ImageUploadAndPreview = ({
               const newFiles = Array.from(input.files ?? []);
               const total =
                 images.length + newFiles.length + existingImages.length;
-              if (total > 6) toast.error("Maximum 6 images allowed");
+              if (total > 6) {
+                toast.error("Maximum 6 images allowed");
+                return;
+              }
               setImages((prev) => [...prev, ...newFiles]);
               //   input.value = "";
             }}

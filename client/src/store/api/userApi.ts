@@ -1,5 +1,6 @@
 import type { UserInfoProps } from "@/features/profile/components/UserInfoSection";
 import { apiSlice } from "../slices/api";
+import type { UserInfo } from "../types/user";
 
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -10,7 +11,11 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: payload,
       }),
     }),
+
+    getAllUsers: builder.query<{ success: boolean; users: UserInfo[] }, void>({
+      query: () => "/users",
+    }),
   }),
 });
 
-export const { useUpdateUserMutation } = userApiSlice;
+export const { useUpdateUserMutation, useGetAllUsersQuery } = userApiSlice;

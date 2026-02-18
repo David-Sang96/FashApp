@@ -11,7 +11,6 @@ const multerFilter = (_req: any, file: Express.Multer.File, cb: any) => {
   }
 
   const ext = file.originalname.split(".").pop()?.toLowerCase();
-
   if (!ext || !allowedExtensions.includes(ext)) {
     return cb(new AppError("Invalid image file extension", 400), false);
   }

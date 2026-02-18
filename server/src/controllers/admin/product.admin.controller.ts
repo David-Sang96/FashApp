@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { deleteOne } from "../../config/cloudinary";
 import { Product } from "../../models/product.model";
+import { User } from "../../models/user.model";
 import { ProductService } from "../../services/product.service";
 import { AppError } from "../../utils/AppError";
 import { catchAsync } from "../../utils/catchAsync";
@@ -40,7 +41,7 @@ export const deleteProduct = catchAsync(async (req: Request, res: Response) => {
 });
 
 /**
- * @route   GET | /api/v1/products/admin
+ * @route   GET | /api/v1/products/admin/all
  * @desc    Get products with user id
  * @access  Private
  */
@@ -131,23 +132,32 @@ export const getProduct = catchAsync(async (req: Request, res: Response) => {
  */
 export const getProductsMeta = catchAsync(
   async (req: Request, res: Response) => {
+    if (!req.user) throw new AppError("Not Authenticated", 401);
+    const userId = req.user._id;
+
     const sizes = await productService.getProductsMetaData("sizes");
     const categories = await productService.getProductsMetaData("category");
     const totalProductOfEachCategory = await Product.aggregate([
       {
+        $match: {
+          userId: userId, // filter first
+        },
+      },
+      {
         $group: {
           _id: "$category",
-          total: { $sum: 1 },
+          count: { $sum: 1 },
         },
       },
       {
         $project: {
           _id: 0,
-          category: "$_id",
-          total: 1,
+          name: "$_id",
+          count: 1,
         },
       },
     ]);
+
     const colors = await Product.aggregate([
       { $unwind: "$colors" },
       {
@@ -169,6 +179,88 @@ export const getProductsMeta = catchAsync(
       },
     ]);
 
+    const avgRating = await Product.aggregate([
+      {
+        $match: {
+          userId: userId,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          averageRating: { $avg: "$rating_count" },
+        },
+      },
+    ]);
+
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const trend = await User.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: sixMonthsAgo },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+          },
+          users: { $sum: 1 },
+        },
+      },
+      // {
+      //   $sort: {
+      //     "_id.year": 1,
+      //     "_id.month": 1,
+      //   },
+      // },
+    ]);
+
+    //prettier-ignore
+    const monthNames = [
+      "Jan","Feb","Mar","Apr","May","Jun",
+      "Jul","Aug","Sep","Oct","Nov","Dec",
+    ];
+    const result = [];
+    const now = new Date();
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const found = trend.find(
+        (t) =>
+          t._id.year === d.getFullYear() && t._id.month === d.getMonth() + 1,
+      );
+
+      result.push({
+        month: monthNames[d.getMonth()],
+        users: found ? found.users : 0,
+      });
+    }
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(now.getDate() - 7);
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(now.getDate() - 30);
+
+    const [totalUsers, weeklyActive, monthlyActive] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ lastActiveAt: { $gte: sevenDaysAgo } }),
+      User.countDocuments({ lastActiveAt: { $gte: thirtyDaysAgo } }),
+    ]);
+
+    const recentUsers = await User.find({
+      lastActiveAt: { $gte: sevenDaysAgo },
+    })
+      .select(
+        "name email provider lastActiveAt role avatar emailVerified active lastLogin",
+      )
+      .sort({ lastActiveAt: -1 }) // newest active first
+      .limit(8)
+      .lean();
+
     res.json({
       colors,
       sizes,
@@ -176,6 +268,12 @@ export const getProductsMeta = catchAsync(
       totalProductOfEachCategory,
       minPrice: priceRange[0]?.minPrice || 0,
       maxPrice: priceRange[0]?.maxPrice || 0,
+      averageRating: Number(avgRating[0]?.averageRating?.toFixed(1)) || 0,
+      signupTrend: result,
+      recentUsers,
+      totalUsers,
+      weeklyActive,
+      monthlyActive,
     });
   },
 );

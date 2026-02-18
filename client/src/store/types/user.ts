@@ -3,6 +3,7 @@ export interface UserInfo {
   name: string;
   email: string;
   role: "user" | "admin";
+  active: boolean;
   avatarUrl?: string;
   emailVerified: boolean;
   provider: "local" | "google";

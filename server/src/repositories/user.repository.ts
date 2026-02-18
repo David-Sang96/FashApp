@@ -3,7 +3,7 @@ import { User } from "../models/user.model";
 import { IUser } from "../types/userType";
 import { AppError } from "../utils/AppError";
 
-export class UserRepositary {
+export class UserRepository {
   static async findByIdOrEmail(params: {
     id?: string | Types.ObjectId;
     email?: string;
@@ -20,8 +20,8 @@ export class UserRepositary {
     return User.findOne(query).select("-__v").exec();
   }
 
-  static async findAllActiveUser() {
-    return User.find({ active: true }).select("-__v");
+  static async findAllUser() {
+    return User.find().select("-__v");
   }
 
   static async save(user: IUser & Document) {

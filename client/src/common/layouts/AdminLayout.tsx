@@ -28,11 +28,11 @@ const AdminLayout = () => {
         <div className="flex min-h-dvh w-full">
           <AppSidebar />
           <div className="flex flex-1 flex-col">
-            <header className="border-border bg-card flex h-14 items-center gap-4 border-b px-4 lg:h-16">
+            <header className="border-border bg-card fixed top-0 flex h-14 w-full items-center gap-4 border-b px-4 lg:h-16">
               <SidebarTrigger />
               <div className="flex-1" />
             </header>
-            <main className="flex-1 overflow-auto p-6">
+            <main className="mt-14 flex-1 overflow-auto p-6">
               <Suspense fallback={<Loader />}>
                 <Outlet />
               </Suspense>

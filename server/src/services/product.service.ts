@@ -34,7 +34,6 @@ export class ProductService {
       throw new AppError("Invalid description", 400);
     }
     const cleanDescription = sanitizeRichText(description);
-    const user = await this.repo.findByUserId(req.user._id);
     if (!files.length) throw new AppError("No file uploaded", 400);
 
     //Process image with Sharp
@@ -155,7 +154,6 @@ export class ProductService {
 
   async getProductsByUserId(id: Types.ObjectId) {
     const products = await this.repo.findByUserId(id);
-    if (!products.length) throw new AppError("Products not found", 404);
     return products;
   }
 

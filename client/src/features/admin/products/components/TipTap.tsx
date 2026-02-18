@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Bold, Italic } from "lucide-react";
-import { useEffect } from "react";
 import { GrOrderedList } from "react-icons/gr";
 import { MdFormatListBulleted } from "react-icons/md";
 
@@ -20,11 +19,11 @@ const Tiptap = ({ onChange, value }: TipTapProps) => {
     },
   });
 
-  useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value);
-    }
-  }, [editor, value]);
+  // useEffect(() => {
+  //   if (editor && value !== editor.getHTML()) {
+  //     editor.commands.setContent(value);
+  //   }
+  // }, [editor, value]);
 
   if (!editor) return null;
 

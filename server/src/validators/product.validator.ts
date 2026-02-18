@@ -84,6 +84,7 @@ const productSchema = (isCreate: boolean) =>
 
     price: {
       optional: !isCreate,
+      // Already fails if value is empty price = ""
       isFloat: {
         options: { gt: validation.PRICE_MIN - 1 },
         errorMessage: validationMessage.PRICE_MIN_MESSAGE,
@@ -96,6 +97,7 @@ const productSchema = (isCreate: boolean) =>
 
     instock_count: {
       optional: !isCreate,
+      // Already fails for: "" null undefined "abc"
       isInt: {
         options: { min: validation.STOCK_COUNT_MIN },
         errorMessage: validationMessage.STOCK_COUNT_MIN_MESSAGE,
@@ -127,7 +129,7 @@ const productSchema = (isCreate: boolean) =>
       },
       custom: {
         options: (arr) => arr.every((s: any) => typeof s === "string"),
-        errorMessage: "Each size must be a string",
+        errorMessage: validationMessage.SIZE_TYPE_MESSAGE,
       },
     },
 
@@ -146,7 +148,7 @@ const productSchema = (isCreate: boolean) =>
     "colors.*.name": {
       optional: !isCreate,
       isString: {
-        errorMessage: "Color name is required",
+        errorMessage: validationMessage.COLORS_REQUIRED_MESSAGE,
       },
     },
 
@@ -154,7 +156,7 @@ const productSchema = (isCreate: boolean) =>
       optional: !isCreate,
       matches: {
         options: /^#([0-9A-Fa-f]{6})$/,
-        errorMessage: "Invalid hex color",
+        errorMessage: validationMessage.COLORS_HEX_MESSAGE,
       },
     },
 
@@ -212,3 +214,12 @@ export const productUploadImageValidator = [
     return true;
   }),
 ];
+
+/* 
+   Validator	              Fails on Empty?
+   isInt()	                       ✅
+   isFloat()	                     ✅
+   isLength({min})	               ✅
+   matches(regex)	                 ✅
+   isBoolean()	                   ✅
+*/

@@ -37,7 +37,7 @@ export const validationMessage = {
   DESCRIPTION_REQUIRED_MESSAGE: "Product description is required",
   DESCRIPTION_MIN_LENGTH_MESSAGE: `Description must be at least ${validation.DESCRIPTION_MIN_LENGTH} characters`,
   CATEGORY_REQUIRED_MESSAGE: "Category is required",
-  CATEGORY_MIN_lENGTH_MESSAGE: `At least ${validation.CATEGORY_MIN_lENGTH} characters`,
+  CATEGORY_MIN_lENGTH_MESSAGE: `Category name must be at least ${validation.CATEGORY_MIN_lENGTH} characters`,
   PRICE_REQUIRED_MESSAGE: "Price is required",
   PRICE_MIN_MESSAGE: "Price must be at least $1",
   PRICE_FORMAT_MESSAGE:
