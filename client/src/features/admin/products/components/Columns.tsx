@@ -85,17 +85,12 @@ export function useProductColumns({
       accessorKey: "name",
       header: ({ column }) => {
         return (
-          <div>
-            <Button
-              variant="ghost"
-              className="cursor-pointer"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-            >
-              Product
-              <ArrowUpDown className="size-4" />
-            </Button>
+          <div
+            className="flex cursor-pointer items-center gap-2"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Product
+            <ArrowUpDown className="size-4" />
           </div>
         );
       },
@@ -116,24 +111,9 @@ export function useProductColumns({
     },
     {
       accessorKey: "category",
-      header: ({ column }) => {
-        return (
-          <div className="text-start">
-            <Button
-              variant="ghost"
-              className="cursor-pointer"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-            >
-              Category
-              <ArrowUpDown className="size-4" />
-            </Button>
-          </div>
-        );
-      },
+      header: () => <div className="">Category</div>,
       cell: ({ getValue }) => (
-        <span className="text-muted-foreground ps-4">{getValue<string>()}</span>
+        <span className="text-muted-foreground">{getValue<string>()}</span>
       ),
     },
     {

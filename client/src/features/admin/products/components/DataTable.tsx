@@ -19,7 +19,9 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -133,6 +135,7 @@ export function DataTable({ data = [] }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 5 });
   const [createProduct, { isLoading: createLoading }] =
     useCreateProductMutation();
   const [open, setOpen] = useState(false);
@@ -154,6 +157,7 @@ export function DataTable({ data = [] }: DataTableProps) {
       sorting,
       columnFilters,
       columnVisibility,
+      pagination,
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -162,6 +166,7 @@ export function DataTable({ data = [] }: DataTableProps) {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    onPaginationChange: setPagination,
   });
 
   function handleEdit(product: Product) {
@@ -252,7 +257,7 @@ export function DataTable({ data = [] }: DataTableProps) {
       <Dialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete {selectedProduct.name}</DialogTitle>
+            <DialogTitle>Delete {selectedProduct?.name}</DialogTitle>
             <DialogDescription>
               Are you sure that you want to delete this product permanently?
             </DialogDescription>
@@ -307,20 +312,24 @@ export function DataTable({ data = [] }: DataTableProps) {
               View
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(v) => column.toggleVisibility(!!v)}
-                  className="capitalize"
-                >
-                  {column.id}
-                </DropdownMenuCheckboxItem>
-              ))}
+          <DropdownMenuContent align="end" className="rounded-xl">
+            <DropdownMenuGroup>
+              <DropdownMenuItem>Toggle columns</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(v) => column.toggleVisibility(!!v)}
+                    className="capitalize"
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                ))}
+            </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -393,10 +402,11 @@ export function DataTable({ data = [] }: DataTableProps) {
 
       {/* Pagination */}
       <div className="flex flex-col gap-4 pe-4 md:flex-row md:items-center md:justify-between">
-        <p className="text-muted-foreground text-sm">
+        <div />
+        {/* <p className="text-muted-foreground text-sm">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} selected
-        </p>
+        </p> */}
 
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 text-sm">
@@ -409,7 +419,7 @@ export function DataTable({ data = [] }: DataTableProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[10, 20, 30, 40, 50].map((s) => (
+                {[5, 10, 15, 20, 25, 30, 35, 40, 45, 50].map((s) => (
                   <SelectItem key={s} value={String(s)}>
                     {s}
                   </SelectItem>

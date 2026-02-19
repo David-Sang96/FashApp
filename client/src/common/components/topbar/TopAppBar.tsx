@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useLogoutMutation } from "@/store/api/authApi";
+import { useAppSelector } from "@/store/hooks";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -37,6 +38,7 @@ const TopAppBar = () => {
   const navigate = useNavigate();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const productsPage = useMatch("/products");
+  const user = useAppSelector((s) => s.auth.userInfo);
 
   useEffect(() => {
     const urlSearch = searchParams.get("search") || "";
@@ -212,11 +214,15 @@ const TopAppBar = () => {
                   Profile
                   <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/admin/dashboard")}>
-                  <GrDashboard className="mr-2 size-4" />
-                  Dashboard
-                  <DropdownMenuShortcut>⇧⌘A</DropdownMenuShortcut>
-                </DropdownMenuItem>
+                {user?.role === "admin" && (
+                  <DropdownMenuItem
+                    onClick={() => navigate("/admin/dashboard")}
+                  >
+                    <GrDashboard className="mr-2 size-4" />
+                    Dashboard
+                    <DropdownMenuShortcut>⇧⌘A</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
