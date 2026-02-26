@@ -6,35 +6,43 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { productItems } from "@/features/home/components/NewArrivals";
-import { useState } from "react";
 
-import type { ProductItemType } from "@/features/products/types/product-type";
-import CartItem from "./CartItem";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { clearCart } from "@/store/slices/cart";
+import CartItemCard from "./CardItemCard";
+import EmptyCart from "./EmptyCart";
 
 const CartSheet = () => {
-  const [products, setProducts] = useState<ProductItemType[]>(productItems);
-
-  const handleDeleleCartItem = (id: number) => {
-    setProducts((prev) => prev.filter((item) => item.id !== id));
-  };
+  const items = useAppSelector((s) => s.cart.items);
+  const dispatch = useAppDispatch();
 
   return (
-    <SheetContent>
+    <SheetContent className="w-full">
       <SheetHeader>
         <SheetTitle className="text-xl">Your Cart</SheetTitle>
       </SheetHeader>
+      {items.length > 2 && (
+        <SheetClose asChild>
+          <Button
+            variant={"link"}
+            className="flex cursor-pointer justify-end"
+            onClick={() => dispatch(clearCart())}
+          >
+            clear all
+          </Button>
+        </SheetClose>
+      )}
       <div className="space-y-6 overflow-auto p-4">
-        {products.map((item) => (
-          <CartItem
-            product={item}
-            key={item.id}
-            deleteCartItem={handleDeleleCartItem}
-          />
-        ))}
+        {items.length === 0 ? (
+          <EmptyCart />
+        ) : (
+          items.map((item) => <CartItemCard item={item} key={item.key} />)
+        )}
       </div>
       <SheetFooter>
-        <Button className="cursor-pointer rounded-full">CheckOut</Button>
+        {items.length > 0 && (
+          <Button className="cursor-pointer rounded-full">CheckOut</Button>
+        )}
         <SheetClose asChild>
           <Button className="cursor-pointer rounded-full" variant="outline">
             Close

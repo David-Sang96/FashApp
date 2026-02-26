@@ -50,13 +50,34 @@ const Chart = ({ productsMeta, users }: ChartProps) => {
     },
   ];
 
+  const monthlyMap: Record<string, number> = {};
+  productsMeta.products.forEach((product) => {
+    const date = new Date(product.createdAt);
+    const month = date.toLocaleString("default", { month: "short" });
+    const year = date.getFullYear();
+    const key = `${month} ${year}`;
+    monthlyMap[key] = (monthlyMap[key] || 0) + 1;
+  });
+
+  const monthlyProductTrend = Object.entries(monthlyMap)
+    .map(([month, count]) => ({
+      month,
+      count,
+      date: new Date(month),
+    }))
+    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .map(({ month, count }, index) => ({
+      month,
+      count,
+      fill: CHART_COLORS[index % CHART_COLORS.length],
+    }));
+
   const categoryData = productsMeta?.totalProductOfEachCategory.map(
     (item, index) => ({
       ...item,
       fill: CHART_COLORS[index % CHART_COLORS.length],
     }),
   );
-
   return (
     <div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -156,6 +177,40 @@ const Chart = ({ productsMeta, users }: ChartProps) => {
           </CardContent>
         </Card>
       </div>
+
+      <div className="mt-4">
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="text-foreground text-base">
+              Monthly product create
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={monthlyProductTrend}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="hsl(220,13%,91%)"
+                />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 12, fill: "hsl(220,9%,46%)" }}
+                />
+                <YAxis tick={{ fontSize: 12, fill: "hsl(220,9%,46%)" }} />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 8,
+                    border: "1px solid hsl(220,13%,91%)",
+                    fontSize: 13,
+                  }}
+                />
+                <Bar dataKey="count" radius={[4, 4, 0, 0]} fillOpacity={0.9} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="mt-4">
         <Card className="border-border">
           <CardHeader>

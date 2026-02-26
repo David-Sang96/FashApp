@@ -43,7 +43,7 @@ const Recent = ({ products, productMeta }: RecentProps) => {
                         <ShieldCheck className="text-primary size-3" />
                       )}
                     </p>
-                    <p className="text-muted-foreground flex items-center gap-1 text-xs">
+                    <p className="text-muted-foreground flex gap-1 text-xs break-all">
                       {u.email}
                       {u.emailVerified ? (
                         <UserCheck className="size-3 text-green-500" />
@@ -53,7 +53,7 @@ const Recent = ({ products, productMeta }: RecentProps) => {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="-me-3 flex items-center">
                   <Badge
                     variant={u.provider === "google" ? "secondary" : "outline"}
                     className="text-[10px]"

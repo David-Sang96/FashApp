@@ -39,6 +39,7 @@ const TopAppBar = () => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const productsPage = useMatch("/products");
   const user = useAppSelector((s) => s.auth.userInfo);
+  const cartItems = useAppSelector((s) => s.cart.items);
 
   useEffect(() => {
     const urlSearch = searchParams.get("search") || "";
@@ -192,7 +193,14 @@ const TopAppBar = () => {
           {/* CART */}
           <Sheet>
             <SheetTrigger asChild>
-              <ShoppingCart className="size-5 cursor-pointer" />
+              <div className="relative">
+                {cartItems.length > 0 && (
+                  <span className="absolute -top-2 -right-2 flex size-4 items-center justify-center rounded-full bg-red-600 text-sm font-bold">
+                    {cartItems.length}
+                  </span>
+                )}
+                <ShoppingCart className="size-5 cursor-pointer" />
+              </div>
             </SheetTrigger>
             <CartSheet />
           </Sheet>
@@ -202,7 +210,7 @@ const TopAppBar = () => {
           {/* USER */}
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <User className="size-[22px] cursor-pointer" />
+              <User className="size-5.5 cursor-pointer" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 rounded-xl">
               <DropdownMenuGroup>

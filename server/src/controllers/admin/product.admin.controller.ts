@@ -137,6 +137,8 @@ export const getProductsMeta = catchAsync(
 
     const sizes = await productService.getProductsMetaData("sizes");
     const categories = await productService.getProductsMetaData("category");
+    const products = await productService.getProductsByUserId(userId);
+
     const totalProductOfEachCategory = await Product.aggregate([
       {
         $match: {
@@ -252,7 +254,7 @@ export const getProductsMeta = catchAsync(
     ]);
 
     const recentUsers = await User.find({
-      lastActiveAt: { $gte: sevenDaysAgo },
+      lastActiveAt: { $gte: thirtyDaysAgo },
     })
       .select(
         "name email provider lastActiveAt role avatar emailVerified active lastLogin",
@@ -265,6 +267,7 @@ export const getProductsMeta = catchAsync(
       colors,
       sizes,
       categories,
+      products,
       totalProductOfEachCategory,
       minPrice: priceRange[0]?.minPrice || 0,
       maxPrice: priceRange[0]?.maxPrice || 0,

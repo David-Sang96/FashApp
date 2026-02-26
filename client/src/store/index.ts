@@ -1,11 +1,20 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
+import { persistReducer, persistStore } from "redux-persist";
+import storage from "redux-persist/lib/storage";
 import { apiSlice } from "./slices/api";
 import authReducer from "./slices/auth";
+import cartReducer, { type CartState } from "./slices/cart";
+
+const cartPersistConfig = {
+  key: "cart", // slice name
+  storage: storage,
+};
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+    cart: persistReducer<CartState>(cartPersistConfig, cartReducer),
     [apiSlice.reducerPath]: apiSlice.reducer,
   },
   middleware: (GetDefaultMiddleware) =>
@@ -14,6 +23,8 @@ export const store = configureStore({
 });
 
 setupListeners(store.dispatch);
+
+export const persistor = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

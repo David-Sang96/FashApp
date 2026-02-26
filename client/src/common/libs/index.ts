@@ -44,3 +44,11 @@ export function timeAgo(dateString: string) {
   if (days === 1) return "Yesterday";
   return `${days}d ago`;
 }
+
+export const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};

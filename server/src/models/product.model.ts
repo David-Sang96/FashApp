@@ -114,6 +114,7 @@ const productSchema = new Schema<IProduct>(
       type: Number,
       required: [true, validationMessage.RATING_REQUIRED_MESSAGE],
       min: [validation.RATING_COUNT_MIN, validationMessage.RATING_MIN_MESSAGE],
+      max: [validation.RATING_COUNT_MAX, validationMessage.RATING_MAX_MESSAGE],
       default: validation.RATING_COUNT_MIN,
     },
 

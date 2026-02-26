@@ -14,6 +14,7 @@ export const validation = {
   STOCK_COUNT_MIN: 0, //
   CATEGORY_MIN_lENGTH: 3,
   RATING_COUNT_MIN: 0,
+  RATING_COUNT_MAX: 5,
 };
 
 export const validationMessage = {
@@ -46,6 +47,7 @@ export const validationMessage = {
   STOCK_COUNT_MIN_MESSAGE: "Stock count cannot be negative",
   RATING_REQUIRED_MESSAGE: "Rating is required",
   RATING_MIN_MESSAGE: "Rating must be at least 0",
+  RATING_MAX_MESSAGE: "Rating must not be more than 5",
   SIZES_MESSAGE: "At least one size must be provided",
   SIZES_REQUIRED_MESSAGE: "Sizes is required",
   SIZE_TYPE_MESSAGE: "Each size must be a string",

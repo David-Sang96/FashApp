@@ -1,5 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAppDispatch } from "@/store/hooks";
+import { addToCart } from "@/store/slices/cart";
 import type { Product } from "@/store/types/product";
 import { Heart } from "lucide-react";
 import { useState } from "react";
@@ -10,8 +12,23 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isWishListed, setIsWishListed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const dispatch = useAppDispatch();
+
+  const handleAddToCart = () => {
+    dispatch(
+      addToCart({
+        _id: product._id,
+        color: product.colors[0].hex,
+        image: product.images[0].image_url,
+        name: product.name,
+        price: String(product.price),
+        quantity: 1,
+        size: product.sizes[0],
+      }),
+    );
+  };
 
   return (
     <div className="border-primary/50 rounded-lg border">
@@ -42,14 +59,14 @@ export function ProductCard({ product }: ProductCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            className={`bg-background/80 hover:bg-background absolute top-3 right-3 backdrop-blur-sm transition-opacity ${
-              isHovered || isWishlisted ? "opacity-100" : "opacity-0"
+            className={`bg-background/80 hover:bg-background absolute top-3 right-3 cursor-pointer backdrop-blur-sm transition-opacity ${
+              isHovered || isWishListed ? "opacity-100" : "opacity-0"
             }`}
-            onClick={() => setIsWishlisted(!isWishlisted)}
+            onClick={() => setIsWishListed(!isWishListed)}
           >
             <Heart
               className={`h-4 w-4 ${
-                isWishlisted ? "fill-current text-red-500" : ""
+                isWishListed ? "fill-current text-red-500" : ""
               }`}
             />
             <span className="sr-only">Add to wishlist</span>
@@ -63,7 +80,11 @@ export function ProductCard({ product }: ProductCardProps) {
                 : "translate-y-2 opacity-0"
             }`}
           >
-            <Button className="w-full" size="sm">
+            <Button
+              className="w-full cursor-pointer"
+              size="sm"
+              onClick={handleAddToCart}
+            >
               Add to Cart
             </Button>
           </div>

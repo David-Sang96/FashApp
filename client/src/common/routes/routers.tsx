@@ -38,6 +38,9 @@ const DashboardHomePage = lazy(
 const ProductHomePage = lazy(
   () => import("@/features/admin/products/pages/HomePage"),
 );
+const OrderHomePage = lazy(
+  () => import("@/features/admin/orders/pages/HomePage"),
+);
 const UserHomePage = lazy(
   () => import("@/features/admin/users/pages/HomePage"),
 );
@@ -97,6 +100,10 @@ const router = createBrowserRouter([
           {
             path: "/admin/products",
             element: <ProductHomePage />,
+          },
+          {
+            path: "/admin/orders",
+            element: <OrderHomePage />,
           },
           {
             path: "/admin/users",

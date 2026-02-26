@@ -1,4 +1,5 @@
 import Loader from "@/common/components/Loader";
+import RatingConverter from "@/common/components/RatingConverter";
 import { Button } from "@/components/ui/button";
 import {
   Carousel,
@@ -10,6 +11,8 @@ import {
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
 import { useGetOneProductQuery } from "@/store/api/productApi";
+import { useAppDispatch } from "@/store/hooks";
+import { addToCart } from "@/store/slices/cart";
 import DOMPurify from "dompurify";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -29,6 +32,7 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(1);
+  const dispatch = useAppDispatch();
 
   const product = data?.product;
   const isOutOfStock = product?.instock_count === 0;
@@ -38,9 +42,7 @@ const ProductDetailPage = () => {
 
   useEffect(() => {
     if (!carouselApi) return;
-
     setCurrent(carouselApi.selectedScrollSnap() + 1);
-
     carouselApi.on("select", () => {
       setCurrent(carouselApi.selectedScrollSnap() + 1);
     });
@@ -53,7 +55,7 @@ const ProductDetailPage = () => {
       product?.colors.length
     ) {
       setSelectedSize(product.sizes[0]);
-      setSelectedColor(product.colors[0].name);
+      setSelectedColor(product.colors[0].hex);
     }
   }, [product]);
 
@@ -68,6 +70,21 @@ const ProductDetailPage = () => {
   }
 
   const sanitizedHTML = DOMPurify.sanitize(product.description);
+
+  const handleAddToCart = () => {
+    dispatch(
+      addToCart({
+        _id: product._id,
+        color: selectedColor,
+        image: product.images[0].image_url,
+        name: product.name,
+        price: String(product.price),
+        quantity,
+        size: selectedSize,
+      }),
+    );
+    setQuantity(1);
+  };
 
   return (
     <div className="lg:px-8">
@@ -125,18 +142,18 @@ const ProductDetailPage = () => {
             <div className="lg:sticky lg:top-24 lg:self-start">
               <div className="lg:pt-3">
                 <h2 className="text-2xl font-bold">{product.name}</h2>
-                {/* <div className="flex items-center gap-2">
-            <RatingConverter rating={product.rating_count} />
-            <span className="text-sm text-black/40">
-              {product.rating_count}/5
-            </span>
-          </div> */}
+                <div className="flex items-center gap-2">
+                  <RatingConverter rating={product.rating_count} />
+                  <span className="text-sm text-black/40">
+                    {product.rating_count}/5
+                  </span>
+                </div>
                 <div className="py-3 text-xl font-semibold">
                   ${product.price}
                 </div>
                 <div
                   dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
-                  className="prose prose-invert max-w-none border-b-2 pb-3 text-sm"
+                  className="prose dark:prose-invert max-w-none border-b-2 pb-3 text-sm"
                 />
 
                 {/* Colors */}
@@ -275,6 +292,7 @@ const ProductDetailPage = () => {
                   <Button
                     disabled={isOutOfStock}
                     className="flex-1 cursor-pointer rounded-full"
+                    onClick={handleAddToCart}
                   >
                     {isOutOfStock ? "Out of Stock" : "Add to Cart"}
                   </Button>

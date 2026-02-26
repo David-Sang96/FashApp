@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useAppSelector } from "@/store/hooks";
 import { LayoutDashboard, Package, Settings, Users } from "lucide-react";
+import { BsBorderStyle } from "react-icons/bs";
 import { Link } from "react-router";
 import { NavLink } from "./NavLink";
 import { NavUser } from "./NavUser";
@@ -16,6 +17,7 @@ import { NavUser } from "./NavUser";
 const navItems = [
   { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
   { title: "Products", url: "/admin/products", icon: Package },
+  { title: "Orders", url: "/admin/orders", icon: BsBorderStyle },
   { title: "Users", url: "/admin/users", icon: Users },
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
